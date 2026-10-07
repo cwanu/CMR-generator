@@ -115,6 +115,7 @@ ul. Tysiąclecia 6
 <div id="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div id="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
 <div id="oIssue" class="o" style="left:10%;top:79.0%;width:37%;height:2.8%;font-size:8px"></div>
+<div id="o23" class="o" style="left:33.8%;top:88.0%;width:32.0%;height:8.0%;font-size:8px;font-weight:700"></div>
 <div id="oExtra" class="o" style="left:51.2%;top:85.2%;width:40%;height:5%;font-size:8px"></div>
 <div id="cargoPreview"></div>
 </div>
@@ -181,7 +182,9 @@ ul. Tysiąclecia 6
     setText("oInstructions",val("instructions"));
     setText("oFreight",val("freight"));
     setText("oSpecial",val("special"));
-    setText("oIssue",[val("issuePlace"),datePL(val("issueDate"))].filter(Boolean).join(" / "));
+    setText("oIssue",[val("loadingPlace"),datePL(val("loadingDate"))].filter(Boolean).join(" / "));
+    var carrierName = val("carrier").split(/\r?\n/)[0].trim();
+    setText("o23",carrierName);
     setText("oExtra",val("extra"));
 
     var box=byId("cargoPreview");
