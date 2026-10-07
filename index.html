@@ -183,7 +183,7 @@ ul. Tysiąclecia 6
     setText("oFreight",val("freight"));
     setText("oSpecial",val("special"));
     setText("oIssue",[val("loadingPlace"),datePL(val("loadingDate"))].filter(Boolean).join(" / "));
-    var carrierName = val("carrier").split(/\r?\n/)[0].trim();
+    var carrierName = val("carrier").trim();
     setText("o23",carrierName);
     setText("oExtra",val("extra"));
 
