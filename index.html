@@ -99,23 +99,23 @@ ul. Tysiąclecia 6
 <h2 style="font-size:18px;margin:0 0 10px">Podgląd CMR</h2>
 <div class="preview">
 <div class="paper" id="paper">
-<div id="oCmr" class="o" style="left:85%;top:9.5%;width:12%;height:2.2%;font-weight:700"></div>
-<div id="oSender" class="o" style="left:7.5%;top:9.5%;width:47%;height:5.8%"></div>
-<div id="oReceiver" class="o" style="left:7.5%;top:17.2%;width:47%;height:5.8%"></div>
-<div id="oDelivery" class="o" style="left:7.5%;top:25.1%;width:47%;height:3.2%"></div>
-<div id="oLoading" class="o" style="left:7.5%;top:30.2%;width:47%;height:3.2%"></div>
-<div id="oDocs" class="o" style="left:7.5%;top:35.2%;width:47%;height:3.0%"></div>
-<div id="oMarks" class="o" style="left:8%;top:39.4%;width:12%;height:19%"></div>
-<div id="oCarrier" class="o" style="left:54%;top:17.2%;width:40%;height:5.8%;font-size:9px"></div>
-<div id="oSuccessive" class="o" style="left:54%;top:25.1%;width:40%;height:3.0%"></div>
-<div id="oReservations" class="o" style="left:54%;top:30.2%;width:40%;height:3.2%"></div>
-<div id="oTractor" class="o" style="left:76%;top:17.5%;width:16%;height:2%;font-weight:700"></div>
-<div id="oTrailer" class="o" style="left:76%;top:20%;width:16%;height:2%;font-weight:700"></div>
-<div id="oInstructions" class="o" style="left:7.5%;top:64%;width:47%;height:9%;font-size:9px"></div>
-<div id="oFreight" class="o" style="left:7.5%;top:77%;width:47%;height:4%;font-size:9px"></div>
-<div id="oSpecial" class="o" style="left:54%;top:64%;width:40%;height:7%;font-size:9px"></div>
-<div id="oIssue" class="o" style="left:10%;top:80%;width:43%;height:3%;font-size:9px"></div>
-<div id="oExtra" class="o" style="left:54%;top:88%;width:40%;height:5%;font-size:8px"></div>
+<div id="oCmr" class="o" style="left:72%;top:7.6%;width:17%;height:2.8%;font-weight:700"></div>
+<div id="oSender" class="o" style="left:10.8%;top:10.1%;width:38%;height:4.0%"></div>
+<div id="oReceiver" class="o" style="left:10.8%;top:17.9%;width:38%;height:4.0%"></div>
+<div id="oDelivery" class="o" style="left:10.8%;top:25.0%;width:38%;height:2.6%"></div>
+<div id="oLoading" class="o" style="left:10.8%;top:30.1%;width:38%;height:2.6%"></div>
+<div id="oDocs" class="o" style="left:10%;top:34.7%;width:37%;height:2.8%"></div>
+<div id="oMarks" class="o" style="left:10%;top:40.2%;width:37%;height:15.5%"></div>
+<div id="oCarrier" class="o" style="left:51.2%;top:18.0%;width:40%;height:4.8%;font-size:8px"></div>
+<div id="oSuccessive" class="o" style="left:51.2%;top:25.7%;width:40%;height:3.0%;font-size:8px"></div>
+<div id="oReservations" class="o" style="left:51.2%;top:31.0%;width:40%;height:4.8%;font-size:8px"></div>
+<div id="oTractor" class="o" style="left:62%;top:20.0%;width:28%;height:2.0%;font-size:8px;font-weight:700"></div>
+<div id="oTrailer" class="o" style="left:62%;top:22.0%;width:28%;height:2.0%;font-size:8px;font-weight:700"></div>
+<div id="oInstructions" class="o" style="left:10%;top:61.2%;width:37%;height:10%;font-size:8px"></div>
+<div id="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
+<div id="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
+<div id="oIssue" class="o" style="left:10%;top:79.0%;width:37%;height:2.8%;font-size:8px"></div>
+<div id="oExtra" class="o" style="left:51.2%;top:85.2%;width:40%;height:5%;font-size:8px"></div>
 <div id="cargoPreview"></div>
 </div>
 </div>
@@ -190,12 +190,12 @@ ul. Tysiąclecia 6
     rows.forEach(function(r,i){
       var y=39.5+i*3.35;
       var fields=[
-        [11.5,7,r.querySelector(".qty").value],
-        [20.5,8,r.querySelector(".pack").value],
-        [28.5,24,r.querySelector(".desc").value],
-        [53,10,r.querySelector(".stat").value],
-        [66,11,r.querySelector(".weight").value],
-        [79,10,r.querySelector(".volume").value]
+        [9.0,7.0,r.querySelector(".qty").value],
+        [16.8,5.4,r.querySelector(".pack").value],
+        [22.4,5.2,r.querySelector(".desc").value],
+        [28.1,17.0,r.querySelector(".stat").value],
+        [53.5,11.3,r.querySelector(".weight").value],
+        [65.2,11.3,r.querySelector(".volume").value]
       ];
       fields.forEach(function(f){
         var d=document.createElement("div");
