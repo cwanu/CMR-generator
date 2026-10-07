@@ -82,6 +82,7 @@ ul. Tysiąclecia 6
 <div class="full"><label>17. Kolejni przewoźnicy</label><textarea id="successive"></textarea></div>
 <div class="full"><label>18. Zastrzeżenia przewoźnika</label><textarea id="reservations"></textarea></div>
 <div class="full"><label>19. Postanowienia specjalne</label><textarea id="special"></textarea></div>
+<div class="full"><label>23. Przewoźnik / dane do pola 23</label><textarea id="field23" readonly placeholder="Dane zostaną automatycznie przepisane z pola 16"></textarea></div>
 <div class="full"><label>Dodatkowe informacje</label><textarea id="extra"></textarea></div>
 </div>
 </div>
@@ -115,7 +116,7 @@ ul. Tysiąclecia 6
 <div id="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div id="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
 <div id="oIssue" class="o" style="left:10%;top:79.0%;width:37%;height:2.8%;font-size:8px"></div>
-<div id="o23" class="o" style="left:33.3%;top:81.8%;width:25.7%;height:8.0%;font-size:8px;line-height:1.15;font-weight:700;z-index:10;padding:1.2% 1.2%;box-sizing:border-box"></div>
+<div id="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.3%;top:82.0%;width:25.7%;height:8.8%;font-size:8px;line-height:1.15;font-weight:700;z-index:100;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap"></div>
 <div id="oExtra" class="o" style="left:51.2%;top:85.2%;width:40%;height:5%;font-size:8px"></div>
 <div id="cargoPreview"></div>
 </div>
@@ -183,8 +184,11 @@ ul. Tysiąclecia 6
     setText("oFreight",val("freight"));
     setText("oSpecial",val("special"));
     setText("oIssue",[val("loadingPlace"),datePL(val("loadingDate"))].filter(Boolean).join(" / "));
+    // Pole 23 jest automatycznie kopiowane z pola 16 (Przewoźnik).
     var carrierName = val("carrier").trim();
-    setText("o23",carrierName);
+    var field23 = byId("field23");
+    if(field23 && field23.value !== carrierName) field23.value = carrierName;
+    setText("o23", carrierName);
     setText("oExtra",val("extra"));
 
     var box=byId("cargoPreview");
