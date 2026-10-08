@@ -116,7 +116,9 @@ ul. Tysiąclecia 6
 <div id="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div id="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
 <div id="oIssue" class="o" style="left:10%;top:79.0%;width:37%;height:2.8%;font-size:8px"></div>
-<div id="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.3%;top:82.0%;width:25.7%;height:8.8%;font-size:8px;line-height:1.15;font-weight:700;z-index:100;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap"></div>
+<div id="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:3.2% 2.2%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important">TOMA-TRANS Tomasz Podgórski
+ul. Tysiąclecia 6
+98-432 Dzietrzkowice</div>
 <div id="oExtra" class="o" style="left:51.2%;top:85.2%;width:40%;height:5%;font-size:8px"></div>
 <div id="cargoPreview"></div>
 </div>
@@ -185,7 +187,7 @@ ul. Tysiąclecia 6
     setText("oSpecial",val("special"));
     setText("oIssue",[val("loadingPlace"),datePL(val("loadingDate"))].filter(Boolean).join(" / "));
     // Pole 23 jest automatycznie kopiowane z pola 16 (Przewoźnik).
-    var carrierName = val("carrier").trim();
+    var carrierName = val("carrier").trim() || "TOMA-TRANS Tomasz Podgórski\nul. Tysiąclecia 6\n98-432 Dzietrzkowice";
     var field23 = byId("field23");
     if(field23 && field23.value !== carrierName) field23.value = carrierName;
     setText("o23", carrierName);
