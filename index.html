@@ -107,11 +107,12 @@ ul. Tysiąclecia 6
 <div id="oLoading" class="o" style="left:10.8%;top:30.1%;width:38%;height:2.6%"></div>
 <div id="oDocs" class="o" style="left:10%;top:34.7%;width:37%;height:2.8%"></div>
 <div id="oMarks" class="o" style="left:10%;top:40.2%;width:37%;height:15.5%"></div>
-<div id="oCarrier" class="o" style="left:51.2%;top:18.0%;width:40%;height:4.8%;font-size:8px"></div>
+<div id="oCarrier" class="o carrier-overlay" aria-label="Pole 16 - przewoźnik" style="left:51.5%;top:16.4%;width:45.0%;height:4.2%;font-size:7.8px;line-height:1.2;font-weight:600;text-align:left;white-space:pre-line;padding:0;box-sizing:border-box;z-index:20"></div>
 <div id="oSuccessive" class="o" style="left:51.2%;top:25.7%;width:40%;height:3.0%;font-size:8px"></div>
 <div id="oReservations" class="o" style="left:51.2%;top:31.0%;width:40%;height:4.8%;font-size:8px"></div>
-<div id="oTractor" class="o" style="left:62%;top:20.0%;width:28%;height:2.0%;font-size:8px;font-weight:700"></div>
-<div id="oTrailer" class="o" style="left:62%;top:22.0%;width:28%;height:2.0%;font-size:8px;font-weight:700"></div>
+<div id="oTractor" class="o" style="display:none"></div>
+<div id="oTrailer" class="o" style="display:none"></div>
+<div id="oReg" class="o" aria-label="Numery rejestracyjne" style="left:61.5%;top:19.7%;width:28.0%;height:2.8%;font-size:7.6px;line-height:1.1;font-weight:700;text-align:left;white-space:nowrap;z-index:20"></div>
 <div id="oInstructions" class="o" style="left:10%;top:61.2%;width:37%;height:10%;font-size:8px"></div>
 <div id="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div id="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
@@ -177,7 +178,9 @@ ul. Tysiąclecia 6
     setText("oLoading",[val("loadingPlace"),datePL(val("loadingDate"))].filter(Boolean).join(" / "));
     setText("oDocs",val("docs"));
     setText("oMarks",val("marks"));
-    setText("oCarrier",val("carrier"));
+    var carrierText = val("carrier").trim();
+    setText("oCarrier", carrierText);
+    setText("oReg", [val("tractor"), val("trailer")].filter(Boolean).join(" / "));
     setText("oSuccessive",val("successive"));
     setText("oReservations",val("reservations"));
     setText("oTractor","Ciągnik: "+val("tractor"));
