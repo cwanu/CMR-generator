@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CMR">
 <link rel="manifest" href="manifest.json">
-<title>CMR Generator v5</title>
+<title>CMR Generator v12</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#eef1f4;--card:#fff;--line:#dfe3e7;--muted:#6b7280;--ink:#111827;--accent:#111827;--soft:#f6f7f9}
@@ -122,9 +122,10 @@ textarea{min-height:58px}
 
 <style id="cmr-no-zoom">
 html, body {
-  touch-action: manipulation;
+  touch-action: pan-y;
   -webkit-text-size-adjust: 100%;
   overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
 }
 input, textarea, select, button {
   touch-action: manipulation;
@@ -204,9 +205,9 @@ ul. Tysiąclecia 6
 <div data-o="oCarrier" class="o carrier-overlay" aria-label="Pole 16 - przewoźnik" style="left:51.5%;top:16.4%;width:45.0%;height:4.0%;font-size:7.6px;line-height:1.16;font-weight:600;text-align:left;white-space:pre-line;padding:1px 1.5px;box-sizing:border-box;z-index:20"></div>
 <div data-o="oSuccessive" class="o" style="left:51.2%;top:25.7%;width:40%;height:3.0%;font-size:8px"></div>
 <div data-o="oReservations" class="o" style="left:51.2%;top:31.0%;width:40%;height:4.8%;font-size:8px"></div>
-<div data-o="oTractor" class="o" style="display:none"></div>
-<div data-o="oTrailer" class="o" style="display:none"></div>
-<div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="left:62.5%;top:21.25%;width:31.5%;height:3.0%;font-size:6.4px;line-height:1.05;font-weight:700;text-align:center;white-space:pre-line;z-index:20"></div>
+<div data-o="oTractor" class="o" aria-label="Numer rejestracyjny ciągnika" style="left:58.5%;top:20.25%;width:12.0%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
+<div data-o="oTrailer" class="o" aria-label="Numer rejestracyjny naczepy" style="left:72.0%;top:20.25%;width:17.5%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
+<div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="display:none"></div>
 <div data-o="oInstructions" class="o" style="left:10%;top:61.2%;width:37%;height:10%;font-size:8px"></div>
 <div data-o="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div data-o="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
@@ -227,9 +228,9 @@ ul. Tysiąclecia 6
 <div data-o="oCarrier" class="o carrier-overlay" aria-label="Pole 16 - przewoźnik" style="left:51.5%;top:16.4%;width:45.0%;height:4.0%;font-size:7.6px;line-height:1.16;font-weight:600;text-align:left;white-space:pre-line;padding:1px 1.5px;box-sizing:border-box;z-index:20"></div>
 <div data-o="oSuccessive" class="o" style="left:51.2%;top:25.7%;width:40%;height:3.0%;font-size:8px"></div>
 <div data-o="oReservations" class="o" style="left:51.2%;top:31.0%;width:40%;height:4.8%;font-size:8px"></div>
-<div data-o="oTractor" class="o" style="display:none"></div>
-<div data-o="oTrailer" class="o" style="display:none"></div>
-<div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="left:62.5%;top:21.25%;width:31.5%;height:3.0%;font-size:6.4px;line-height:1.05;font-weight:700;text-align:center;white-space:pre-line;z-index:20"></div>
+<div data-o="oTractor" class="o" aria-label="Numer rejestracyjny ciągnika" style="left:58.5%;top:20.25%;width:12.0%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
+<div data-o="oTrailer" class="o" aria-label="Numer rejestracyjny naczepy" style="left:72.0%;top:20.25%;width:17.5%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
+<div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="display:none"></div>
 <div data-o="oInstructions" class="o" style="left:10%;top:61.2%;width:37%;height:10%;font-size:8px"></div>
 <div data-o="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div data-o="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
@@ -250,9 +251,9 @@ ul. Tysiąclecia 6
 <div data-o="oCarrier" class="o carrier-overlay" aria-label="Pole 16 - przewoźnik" style="left:51.5%;top:16.4%;width:45.0%;height:4.0%;font-size:7.6px;line-height:1.16;font-weight:600;text-align:left;white-space:pre-line;padding:1px 1.5px;box-sizing:border-box;z-index:20"></div>
 <div data-o="oSuccessive" class="o" style="left:51.2%;top:25.7%;width:40%;height:3.0%;font-size:8px"></div>
 <div data-o="oReservations" class="o" style="left:51.2%;top:31.0%;width:40%;height:4.8%;font-size:8px"></div>
-<div data-o="oTractor" class="o" style="display:none"></div>
-<div data-o="oTrailer" class="o" style="display:none"></div>
-<div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="left:62.5%;top:21.25%;width:31.5%;height:3.0%;font-size:6.4px;line-height:1.05;font-weight:700;text-align:center;white-space:pre-line;z-index:20"></div>
+<div data-o="oTractor" class="o" aria-label="Numer rejestracyjny ciągnika" style="left:58.5%;top:20.25%;width:12.0%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
+<div data-o="oTrailer" class="o" aria-label="Numer rejestracyjny naczepy" style="left:72.0%;top:20.25%;width:17.5%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
+<div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="display:none"></div>
 <div data-o="oInstructions" class="o" style="left:10%;top:61.2%;width:37%;height:10%;font-size:8px"></div>
 <div data-o="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div data-o="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
@@ -273,9 +274,9 @@ ul. Tysiąclecia 6
 <div data-o="oCarrier" class="o carrier-overlay" aria-label="Pole 16 - przewoźnik" style="left:51.5%;top:16.4%;width:45.0%;height:4.0%;font-size:7.6px;line-height:1.16;font-weight:600;text-align:left;white-space:pre-line;padding:1px 1.5px;box-sizing:border-box;z-index:20"></div>
 <div data-o="oSuccessive" class="o" style="left:51.2%;top:25.7%;width:40%;height:3.0%;font-size:8px"></div>
 <div data-o="oReservations" class="o" style="left:51.2%;top:31.0%;width:40%;height:4.8%;font-size:8px"></div>
-<div data-o="oTractor" class="o" style="display:none"></div>
-<div data-o="oTrailer" class="o" style="display:none"></div>
-<div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="left:62.5%;top:21.25%;width:31.5%;height:3.0%;font-size:6.4px;line-height:1.05;font-weight:700;text-align:center;white-space:pre-line;z-index:20"></div>
+<div data-o="oTractor" class="o" aria-label="Numer rejestracyjny ciągnika" style="left:58.5%;top:20.25%;width:12.0%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
+<div data-o="oTrailer" class="o" aria-label="Numer rejestracyjny naczepy" style="left:72.0%;top:20.25%;width:17.5%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
+<div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="display:none"></div>
 <div data-o="oInstructions" class="o" style="left:10%;top:61.2%;width:37%;height:10%;font-size:8px"></div>
 <div data-o="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div data-o="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
@@ -412,7 +413,7 @@ ul. Tysiąclecia 6
     setText("oMarks",val("marks"));
     var carrierText = val("carrier").trim();
     setText("oCarrier", carrierText);
-    setText("oReg", [val("trailer"), val("tractor")].filter(Boolean).join("\n"));
+    setText("oTractor", val("tractor")); setText("oTrailer", val("trailer")); setText("oReg", "");
     setText("oSuccessive",val("successive"));
     setText("oReservations",val("reservations"));
     setText("oTractor","Ciągnik: "+val("tractor"));
@@ -532,13 +533,30 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
 
 <script id="cmr-no-zoom-js">
 (function () {
-  document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, {passive:false});
-  document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, {passive:false});
-  document.addEventListener('gestureend', function (e) { e.preventDefault(); }, {passive:false});
+  // iPhone/Safari: block pinch-zoom (2+ fingers) and double-tap zoom,
+  // while keeping normal one-finger vertical scrolling and text editing.
+  document.addEventListener('gesturestart', function (e) {
+    e.preventDefault();
+  }, {passive:false});
+  document.addEventListener('gesturechange', function (e) {
+    e.preventDefault();
+  }, {passive:false});
+  document.addEventListener('gestureend', function (e) {
+    e.preventDefault();
+  }, {passive:false});
+
+  document.addEventListener('touchmove', function (e) {
+    if (e.touches && e.touches.length > 1) {
+      e.preventDefault();
+    }
+  }, {passive:false});
+
   var lastTouchEnd = 0;
   document.addEventListener('touchend', function (e) {
     var now = Date.now();
-    if (now - lastTouchEnd <= 300) e.preventDefault();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
     lastTouchEnd = now;
   }, {passive:false});
 })();
