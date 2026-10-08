@@ -112,7 +112,7 @@ ul. Tysiąclecia 6
 <div id="oReservations" class="o" style="left:51.2%;top:31.0%;width:40%;height:4.8%;font-size:8px"></div>
 <div id="oTractor" class="o" style="display:none"></div>
 <div id="oTrailer" class="o" style="display:none"></div>
-<div id="oReg" class="o" aria-label="Numery rejestracyjne" style="left:61.5%;top:19.7%;width:28.0%;height:2.8%;font-size:7.6px;line-height:1.1;font-weight:700;text-align:left;white-space:nowrap;z-index:20"></div>
+<div id="oReg" class="o" aria-label="Numery rejestracyjne" style="left:61.5%;top:19.0%;width:28.0%;height:5.2%;font-size:7.6px;line-height:1.35;font-weight:700;text-align:left;white-space:pre-line;z-index:20"></div>
 <div id="oInstructions" class="o" style="left:10%;top:61.2%;width:37%;height:10%;font-size:8px"></div>
 <div id="oFreight" class="o" style="left:10%;top:75.1%;width:37%;height:3.2%;font-size:8px"></div>
 <div id="oSpecial" class="o" style="left:51.2%;top:59.8%;width:40%;height:8%;font-size:8px"></div>
@@ -180,7 +180,7 @@ ul. Tysiąclecia 6
     setText("oMarks",val("marks"));
     var carrierText = val("carrier").trim();
     setText("oCarrier", carrierText);
-    setText("oReg", [val("tractor"), val("trailer")].filter(Boolean).join(" / "));
+    setText("oReg", [val("trailer"), val("tractor")].filter(Boolean).join("\n"));
     setText("oSuccessive",val("successive"));
     setText("oReservations",val("reservations"));
     setText("oTractor","Ciągnik: "+val("tractor"));

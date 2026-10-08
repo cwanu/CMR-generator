@@ -1,1 +1,10 @@
-{"name":"CMR Generator","short_name":"CMR","start_url":"./","display":"standalone","background_color":"#eef2f3","theme_color":"#111111"}
+{
+  "name": "CMR Generator",
+  "short_name": "CMR",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f2f3f5",
+  "theme_color": "#111111",
+  "lang": "pl",
+  "icons": []
+}
