@@ -148,6 +148,7 @@ textarea{min-height:58px}
 .vehicle-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.vehicle-modal-actions button{width:auto;margin:0}
 .vehicle-list{display:grid;gap:8px;margin:12px 0}.vehicle-item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #ddd;border-radius:10px;padding:10px}.vehicle-item-main{min-width:0}.vehicle-item-value{font-weight:700;word-break:break-word}.vehicle-item-default{font-size:12px;color:#287a3e;margin-top:3px}.vehicle-item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.vehicle-item-actions button{width:auto;margin:0;padding:9px 10px;font-size:13px}
 @media(max-width:500px){.vehicle-profile-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}.vehicle-tool{width:100%;padding:8px 7px;font-size:12px}.vehicle-item{display:block}.vehicle-item-actions{margin-top:8px;justify-content:stretch}.vehicle-item-actions button{flex:1}}
+.vehicle-profile-tools{display:flex;gap:8px;margin:7px 0 2px;flex-wrap:wrap}.vehicle-profile-tools .carrier-tool{flex:0 1 auto;width:auto}.vehicle-profile-tools .carrier-tool{padding:9px 12px;font-size:13px}@media(max-width:500px){.vehicle-profile-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}.vehicle-profile-tools .carrier-tool{width:100%;padding:8px 7px;font-size:12px}}
 </style>
 <style id="carrier-profiles-ui">
 .carrier-profile-tools{display:flex;gap:8px;margin:7px 0 2px;flex-wrap:wrap}
@@ -355,33 +356,33 @@ input, textarea, select, button {
   </div>
 </div>
 <div><label>Ciągnik</label><input id="tractor" value="" autocomplete="off"></div>
-<div class="vehicle-profile-tools" aria-label="Zapisane numery ciągników">
-  <button type="button" class="vehicle-tool add">＋ Dodaj ciągnik</button>
-  <button type="button" class="vehicle-tool choose">👥 Wybierz ciągnik</button>
+<div class="carrier-profile-tools vehicle-profile-tools" aria-label="Zapisane numery ciągników">
+  <button type="button" class="carrier-tool add vehicle-add-tractor" onclick="window.openTractorAdd()">＋ Dodaj ciągnik</button>
+  <button type="button" class="carrier-tool choose vehicle-choose-tractor" onclick="window.openTractorPicker()">👥 Wybierz ciągnik</button>
 </div>
 <div><label>Naczepa</label><input id="trailer" value="" autocomplete="off"></div>
-<div class="vehicle-profile-tools" aria-label="Zapisane numery naczep">
-  <button type="button" class="vehicle-tool add">＋ Dodaj naczepę</button>
-  <button type="button" class="vehicle-tool choose">👥 Wybierz naczepę</button>
+<div class="carrier-profile-tools vehicle-profile-tools" aria-label="Zapisane numery naczep">
+  <button type="button" class="carrier-tool add vehicle-add-trailer" onclick="window.openTrailerAdd()">＋ Dodaj naczepę</button>
+  <button type="button" class="carrier-tool choose vehicle-choose-trailer" onclick="window.openTrailerPicker()">👥 Wybierz naczepę</button>
 </div>
 
 <div id="tractorAddModal" class="vehicle-modal" aria-hidden="true"><div class="vehicle-modal-card" role="dialog" aria-modal="true">
 <h3>Dodaj ciągnik</h3><p>Numer zostanie zapisany w pamięci telefonu. Nie jest częścią profilu przewoźnika.</p>
 <input id="newTractorData" type="text" placeholder="Np. PNT65116" autocomplete="off">
 <label class="vehicle-default-check"><input type="checkbox" id="newTractorDefault"> Ustaw jako domyślny</label>
-<div class="vehicle-modal-actions"><button type="button" class="secondary">Anuluj</button><button type="button" class="primary">Zapisz</button></div></div></div>
+<div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTractorAdd()">Anuluj</button><button type="button" class="primary" onclick="window.saveNewTractor()">Zapisz</button></div></div></div>
 <div id="tractorPickerModal" class="vehicle-modal" aria-hidden="true"><div class="vehicle-modal-card" role="dialog" aria-modal="true">
 <h3>Zapisane ciągniki</h3><div id="tractorList" class="vehicle-list"></div>
-<div class="vehicle-modal-actions"><button type="button" class="secondary">Zamknij</button></div></div></div>
+<div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTractorPicker()">Zamknij</button></div></div></div>
 
 <div id="trailerAddModal" class="vehicle-modal" aria-hidden="true"><div class="vehicle-modal-card" role="dialog" aria-modal="true">
 <h3>Dodaj naczepę</h3><p>Numer zostanie zapisany w pamięci telefonu.</p>
 <input id="newTrailerData" type="text" placeholder="Np. EWI3UG6" autocomplete="off">
 <label class="vehicle-default-check"><input type="checkbox" id="newTrailerDefault"> Ustaw jako domyślną</label>
-<div class="vehicle-modal-actions"><button type="button" class="secondary">Anuluj</button><button type="button" class="primary">Zapisz</button></div></div></div>
+<div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTrailerAdd()">Anuluj</button><button type="button" class="primary" onclick="window.saveNewTrailer()">Zapisz</button></div></div></div>
 <div id="trailerPickerModal" class="vehicle-modal" aria-hidden="true"><div class="vehicle-modal-card" role="dialog" aria-modal="true">
 <h3>Zapisane naczepy</h3><div id="trailerList" class="vehicle-list"></div>
-<div class="vehicle-modal-actions"><button type="button" class="secondary">Zamknij</button></div></div></div>
+<div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTrailerPicker()">Zamknij</button></div></div></div>
 <div class="full"><label>17. Kolejni przewoźnicy</label><textarea id="successive"></textarea></div>
 <div class="full"><label>18. Zastrzeżenia przewoźnika</label><textarea id="reservations"></textarea></div>
 <div class="full"><label>19. Postanowienia specjalne</label><textarea id="special"></textarea></div>
