@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CMR">
 <link rel="manifest" href="manifest.json">
-<title>CMR Generator v20</title>
+<title>CMR Generator v23</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#eef1f4;--card:#fff;--line:#dfe3e7;--muted:#6b7280;--ink:#111827;--accent:#111827;--soft:#f6f7f9}
@@ -196,7 +196,7 @@ input, textarea, select, button {
 <div class="wrap" id="app">
 <h1>CMR Generator</h1>
 <p class="subtitle">Wypełnij dokument, sprawdź podgląd i wydrukuj komplet 4 stron.</p>
-<div class="nojs" id="jsWarning">Jeżeli widzisz ten komunikat i przyciski nie reagują, przeglądarka nie uruchomiła JavaScript. Wtedy trzeba otworzyć plik bezpośrednio w Safari, a nie w podglądzie pliku.</div>
+<div class="nojs" id="jsWarning" style="display:none!important">Jeżeli widzisz ten komunikat i przyciski nie reagują, przeglądarka nie uruchomiła JavaScript.</div>
 
 <div class="panel">
 <div class="grid">
@@ -653,7 +653,18 @@ ul. Tysiąclecia 6
       if(p){p.style.removeProperty("display");p.style.removeProperty("visibility");}
     });
     tabs.forEach(function(t,n){t.classList.toggle("active",n===i);t.setAttribute("aria-selected",n===i?"true":"false");});
-    requestAnimationFrame(fitPreviewFonts);
+    requestAnimationFrame(function(){
+      document.querySelectorAll(".paper .o, .paper .cargo").forEach(function(el){
+        if(!el.textContent.trim()) return;
+        var base=parseFloat(el.dataset.baseFont||"") || parseFloat(el.style.fontSize) || 8;
+        var min=3;
+        el.style.fontSize=base+"px";
+        var guard=0;
+        while((el.scrollWidth>el.clientWidth-1.5 || el.scrollHeight>el.clientHeight-2.5) && parseFloat(el.style.fontSize)>min && guard++<80){
+          el.style.fontSize=Math.max(min,parseFloat(el.style.fontSize)-0.15).toFixed(2)+"px";
+        }
+      });
+    });
   }
   tabs.forEach(function(t){
     t.onclick=function(e){e.preventDefault();forcePage(parseInt(t.dataset.page||"0",10));};
