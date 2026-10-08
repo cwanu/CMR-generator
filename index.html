@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CMR">
 <link rel="manifest" href="manifest.json">
-<title>CMR Generator v12</title>
+<title>CMR Generator v15</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#eef1f4;--card:#fff;--line:#dfe3e7;--muted:#6b7280;--ink:#111827;--accent:#111827;--soft:#f6f7f9}
@@ -58,7 +58,7 @@ button:active{transform:scale(.98)}
  textarea{min-height:58px}
  .actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.actions button:first-child{grid-column:1/-1}
  .preview-panel{padding:10px}.preview{padding:7px;border-radius:11px}
- .paper-wrap{width:100%}.paper{width:100%;border-radius:2px}
+ .paper-wrap{width:100%;height:100%}.paper-wrap.active{display:block !important}.paper{width:auto;height:calc(100% - 18px);border-radius:2px;margin:0 auto;display:block}
  .page-label{text-align:left;padding-left:2px}
  .preview-note{display:none}
 }
@@ -82,10 +82,10 @@ button:active{transform:scale(.98)}
 .preview{position:relative;background:#e9edf2;padding:12px;display:flex;align-items:center;justify-content:center;height:min(68vh,620px);min-height:500px;overflow:hidden}
 .preview-tabs{scrollbar-width:none;box-shadow:inset 0 0 0 1px #e1e5ea}
 .preview-tabs::-webkit-scrollbar{display:none}
-.paper-wrap{width:100%;height:100%;max-width:none;display:none;position:relative}
-.paper-wrap.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
-.paper-wrap .page-label{flex:0 0 auto;margin:0 0 6px;font-size:11px}
-.paper{height:calc(100% - 20px);width:auto;max-width:100%;aspect-ratio:210/297;flex:0 0 auto}
+.paper-wrap{width:100%;height:100%;max-width:none;display:none;position:relative;overflow:hidden}
+.paper-wrap.active{display:block !important}
+.paper-wrap .page-label{height:14px;line-height:14px;margin:0 0 4px;font-size:11px;text-align:center}
+.paper-wrap.active .paper{height:calc(100% - 18px);width:auto;max-width:100%;aspect-ratio:210/297;margin:0 auto;display:block}
 .form-panel,.panel{border-color:#e3e7eb}
 .grid{gap:12px}
 label{font-size:11px;letter-spacing:.01em;color:#4b5563}
@@ -494,9 +494,22 @@ ul. Tysiąclecia 6
   var previewWraps = document.querySelectorAll(".preview .paper-wrap");
   var previewTabs = document.querySelectorAll(".preview-tab");
   function showPreviewPage(index){
-    previewWraps.forEach(function(w,i){ w.classList.toggle("active", i===index); });
-    previewTabs.forEach(function(b,i){ b.classList.toggle("active", i===index); });
-    requestAnimationFrame(fitPreviewFonts);
+    if(index < 0 || index >= previewWraps.length) index = 0;
+    previewWraps.forEach(function(w,i){
+      var active = i === index;
+      w.classList.toggle("active", active);
+      w.style.display = active ? "block" : "none";
+      w.setAttribute("aria-hidden", active ? "false" : "true");
+    });
+    previewTabs.forEach(function(b,i){
+      var active = i === index;
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    requestAnimationFrame(function(){
+      fitPreviewFonts();
+      requestAnimationFrame(fitPreviewFonts);
+    });
   }
   previewTabs.forEach(function(btn){
     btn.addEventListener("click", function(){ showPreviewPage(parseInt(btn.getAttribute("data-page"),10)||0); });
