@@ -145,6 +145,15 @@ input, textarea, select, button {
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
 }
+
+/* V19 Safari-safe page switching: keep all pages in the same layer and switch only opacity/visibility. */
+.preview{position:relative;overflow:hidden;}
+.preview .paper-wrap{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;max-width:none!important;display:block!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;z-index:1!important;overflow:hidden!important;}
+.preview .paper-wrap.active{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;z-index:2!important;}
+.preview .paper-wrap .page-label{position:absolute!important;top:0!important;left:0!important;right:0!important;height:14px!important;line-height:14px!important;margin:0!important;z-index:50!important;}
+.preview .paper-wrap .paper,
+.preview .paper-wrap.active .paper{position:absolute!important;display:block!important;visibility:visible!important;top:18px!important;left:50%!important;transform:translateX(-50%)!important;width:auto!important;height:calc(100% - 18px)!important;max-width:100%!important;aspect-ratio:210/297!important;margin:0!important;background-size:100% 100%!important;background-position:center!important;background-repeat:no-repeat!important;}
+.preview .paper-bg{display:block!important;visibility:visible!important;width:100%!important;height:100%!important;object-fit:fill!important;}
 </style>
 </head>
 <body>
@@ -516,10 +525,10 @@ ul. Tysiąclecia 6
     previewWraps.forEach(function(w,i){
       var active = (i === index);
       w.classList.toggle("active", active);
-      w.style.display = active ? "flex" : "none";
+      w.removeAttribute("style");
       w.setAttribute("aria-hidden", active ? "false" : "true");
       var paper = w.querySelector(".paper");
-      if(paper){ paper.style.display = "block"; paper.style.visibility = active ? "visible" : "hidden"; }
+      if(paper){ paper.style.removeProperty("display"); paper.style.removeProperty("visibility"); }
     });
     previewTabs.forEach(function(b,i){
       var active = (i === index);
@@ -567,10 +576,9 @@ ul. Tysiąclecia 6
     wraps.forEach(function(w,n){
       var on=n===i;
       w.classList.toggle("active",on);
-      w.style.display=on?"flex":"none";
-      w.style.visibility=on?"visible":"hidden";
+      w.removeAttribute("style");
       var p=w.querySelector(".paper");
-      if(p){p.style.display="block";p.style.visibility=on?"visible":"hidden";}
+      if(p){p.style.removeProperty("display");p.style.removeProperty("visibility");}
     });
     tabs.forEach(function(t,n){t.classList.toggle("active",n===i);t.setAttribute("aria-selected",n===i?"true":"false");});
     requestAnimationFrame(fitPreviewFonts);
