@@ -326,16 +326,16 @@ input, textarea, select, button {
   <label>1. Nadawca</label>
   <textarea id="sender"></textarea>
   <div class="party-tools" aria-label="Profile nadawców">
-    <button type="button" class="party-tool add" onclick="window.openSenderAdd()"><span class="party-icon">＋</span><span>Dodaj</span></button>
-    <button type="button" class="party-tool choose" onclick="window.openSenderPicker()"><span class="party-icon">👥</span><span>Wybierz</span></button>
+    <button type="button" class="party-tool add" data-party-action="sender-add"><span class="party-icon">＋</span><span>Dodaj nadawcę</span></button>
+    <button type="button" class="party-tool choose" data-party-action="sender-picker"><span class="party-icon">👥</span><span>Wybierz nadawcę</span></button>
   </div>
 </div>
 <div class="party-field">
   <label>2. Odbiorca</label>
   <textarea id="receiver"></textarea>
   <div class="party-tools" aria-label="Profile odbiorców">
-    <button type="button" class="party-tool add" onclick="window.openReceiverAdd()"><span class="party-icon">＋</span><span>Dodaj</span></button>
-    <button type="button" class="party-tool choose" onclick="window.openReceiverPicker()"><span class="party-icon">👥</span><span>Wybierz</span></button>
+    <button type="button" class="party-tool add" data-party-action="receiver-add"><span class="party-icon">＋</span><span>Dodaj odbiorcę</span></button>
+    <button type="button" class="party-tool choose" data-party-action="receiver-picker"><span class="party-icon">👥</span><span>Wybierz odbiorcę</span></button>
   </div>
 </div>
 <div id="senderAddModal" class="carrier-modal" aria-hidden="true"><div class="carrier-modal-card" role="dialog" aria-modal="true"><h3>Dodaj nadawcę</h3><p>Zapisywane są wszystkie dane nadawcy z tego pola.</p><textarea id="newSenderData" placeholder="Nazwa firmy
@@ -1035,6 +1035,15 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
 </script>
 <script id="sender-receiver-profiles-js">
 (function(){
+  document.querySelectorAll('[data-party-action]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var a=btn.getAttribute('data-party-action');
+      if(a==='sender-add') window.openSenderProfileAdd();
+      else if(a==='sender-picker') window.openSenderProfilePicker();
+      else if(a==='receiver-add') window.openReceiverProfileAdd();
+      else if(a==='receiver-picker') window.openReceiverProfilePicker();
+    });
+  });
   var CFG={
     sender:{label:'nadawcę',field:'sender',add:'senderAddModal',picker:'senderPickerModal',text:'newSenderData',def:'newSenderDefault',list:'senderList',key:'CMR_SAVED_SENDERS_V1'},
     receiver:{label:'odbiorcę',field:'receiver',add:'receiverAddModal',picker:'receiverPickerModal',text:'newReceiverData',def:'newReceiverDefault',list:'receiverList',key:'CMR_SAVED_RECEIVERS_V1'}
@@ -1055,8 +1064,8 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
   function remove(t,i){var c=CFG[t],a=read(c.key).filter(function(v){return v.id!==i;});write(c.key,a);render(t);}
   function render(t){var c=CFG[t],box=el(c.list);if(!box)return;var a=read(c.key);if(!a.length){box.innerHTML='<div class="carrier-empty">Brak zapisanych '+(t==='sender'?'nadawców.':'odbiorców.')+'</div>';return;}box.innerHTML=a.map(function(v){return '<div class="carrier-item '+(v.default?'default':'')+'"><div class="carrier-item-text">'+esc(v.text)+(v.default?'\n★ Domyślny':'')+'</div><div class="carrier-item-actions"><button class="use" type="button" data-a="use" data-i="'+esc(v.id)+'">Użyj</button><button class="default" type="button" data-a="default" data-i="'+esc(v.id)+'">Ustaw domyślny</button><button class="delete" type="button" data-a="delete" data-i="'+esc(v.id)+'">Usuń</button></div></div>';}).join('');box.querySelectorAll('[data-a]').forEach(function(b){b.addEventListener('click',function(){var a=b.getAttribute('data-a'),i=b.getAttribute('data-i');if(a==='use')use(t,i);else if(a==='default')setDefault(t,i);else remove(t,i);});});}
   function load(t){var c=CFG[t],a=read(c.key),x=a.find(function(v){return v.default;});if(x&&el(c.field)&&!el(c.field).value.trim()){el(c.field).value=x.text;sync();}}
-  window.openSenderAdd=function(){openAdd('sender');};window.closeSenderAdd=function(){close(el(CFG.sender.add));};window.openSenderPicker=function(){openPicker('sender');};window.closeSenderPicker=function(){close(el(CFG.sender.picker));};window.saveNewSender=function(){saveNew('sender');};
-  window.openReceiverAdd=function(){openAdd('receiver');};window.closeReceiverAdd=function(){close(el(CFG.receiver.add));};window.openReceiverPicker=function(){openPicker('receiver');};window.closeReceiverPicker=function(){close(el(CFG.receiver.picker));};window.saveNewReceiver=function(){saveNew('receiver');};
+  window.openSenderProfileAdd=function(){openAdd('sender');};window.closeSenderAdd=function(){close(el(CFG.sender.add));};window.openSenderProfilePicker=function(){openPicker('sender');};window.closeSenderPicker=function(){close(el(CFG.sender.picker));};window.saveNewSender=function(){saveNew('sender');};
+  window.openReceiverProfileAdd=function(){openAdd('receiver');};window.closeReceiverAdd=function(){close(el(CFG.receiver.add));};window.openReceiverProfilePicker=function(){openPicker('receiver');};window.closeReceiverPicker=function(){close(el(CFG.receiver.picker));};window.saveNewReceiver=function(){saveNew('receiver');};
   function init(){['sender','receiver'].forEach(function(t){var c=CFG[t],a=el(c.add),p=el(c.picker);[a,p].forEach(function(m){if(m)m.addEventListener('click',function(e){if(e.target===m)close(m);});});load(t);});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
