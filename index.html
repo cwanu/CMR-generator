@@ -134,6 +134,15 @@ textarea{min-height:58px}
   .preview .paper-wrap.active .paper{height:calc(100% - 18px)!important;width:auto!important;max-width:100%!important}
 }
 
+
+/* V39: saved tractor and trailer profiles */
+.vehicle-profile-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 14px}
+.vehicle-tool{width:100%;margin:0;padding:11px 10px;border:0;border-radius:9px;font-weight:700;cursor:pointer}
+.vehicle-tool.add{background:#287a3e;color:#fff}.vehicle-tool.choose{background:#555;color:#fff}
+.vehicle-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:10000}
+.vehicle-modal.open{display:flex}.vehicle-modal-card{width:min(460px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.vehicle-modal-card h3{margin:0 0 8px}.vehicle-modal-card p{margin:0 0 12px;color:#555;font-size:14px}.vehicle-modal-card textarea{min-height:90px}.vehicle-list{display:grid;gap:8px;margin:12px 0}.vehicle-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid #ddd;border-radius:9px;padding:10px}.vehicle-item-main{min-width:0}.vehicle-item-value{font-weight:700;word-break:break-word}.vehicle-item-default{font-size:12px;color:#287a3e;margin-top:3px}.vehicle-item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.vehicle-item-actions button{width:auto;margin:0;padding:9px 10px;font-size:13px}.vehicle-modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.vehicle-modal-actions button{width:auto;margin:0}.vehicle-default-check{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:600}.vehicle-default-check input{width:auto;margin:0}
+@media(max-width:500px){.vehicle-profile-tools{grid-template-columns:1fr}.vehicle-item{grid-template-columns:1fr}.vehicle-item-actions{justify-content:stretch}.vehicle-item-actions button{flex:1}}
 </style>
 <style id="carrier-profiles-ui">
 .carrier-profile-tools{display:flex;gap:8px;margin:7px 0 2px;flex-wrap:wrap}
@@ -340,8 +349,34 @@ input, textarea, select, button {
     <div class="carrier-modal-actions"><button type="button" class="secondary" onclick="window.closeCarrierPicker()">Zamknij</button></div>
   </div>
 </div>
-<div><label>Ciągnik</label><input id="tractor" value=""></div>
-<div><label>Naczepa</label><input id="trailer" value=""></div>
+<div><label>Ciągnik</label><input id="tractor" value="" autocomplete="off"></div>
+<div class="vehicle-profile-tools" aria-label="Zapisane numery ciągników">
+  <button type="button" class="vehicle-tool add" onclick="window.openTractorAdd()">＋ Dodaj ciągnik</button>
+  <button type="button" class="vehicle-tool choose" onclick="window.openTractorPicker()">👥 Wybierz ciągnik</button>
+</div>
+<div><label>Naczepa</label><input id="trailer" value="" autocomplete="off"></div>
+<div class="vehicle-profile-tools" aria-label="Zapisane numery naczep">
+  <button type="button" class="vehicle-tool add" onclick="window.openTrailerAdd()">＋ Dodaj naczepę</button>
+  <button type="button" class="vehicle-tool choose" onclick="window.openTrailerPicker()">👥 Wybierz naczepę</button>
+</div>
+
+<div id="tractorAddModal" class="vehicle-modal" aria-hidden="true"><div class="vehicle-modal-card" role="dialog" aria-modal="true">
+<h3>Dodaj ciągnik</h3><p>Numer zostanie zapisany w pamięci telefonu. Nie jest częścią profilu przewoźnika.</p>
+<input id="newTractorData" type="text" placeholder="Np. PNT65116" autocomplete="off">
+<label class="vehicle-default-check"><input type="checkbox" id="newTractorDefault"> Ustaw jako domyślny</label>
+<div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTractorAdd()">Anuluj</button><button type="button" class="primary" onclick="window.saveNewTractor()">Zapisz</button></div></div></div>
+<div id="tractorPickerModal" class="vehicle-modal" aria-hidden="true"><div class="vehicle-modal-card" role="dialog" aria-modal="true">
+<h3>Zapisane ciągniki</h3><div id="tractorList" class="vehicle-list"></div>
+<div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTractorPicker()">Zamknij</button></div></div></div>
+
+<div id="trailerAddModal" class="vehicle-modal" aria-hidden="true"><div class="vehicle-modal-card" role="dialog" aria-modal="true">
+<h3>Dodaj naczepę</h3><p>Numer zostanie zapisany w pamięci telefonu.</p>
+<input id="newTrailerData" type="text" placeholder="Np. EWI3UG6" autocomplete="off">
+<label class="vehicle-default-check"><input type="checkbox" id="newTrailerDefault"> Ustaw jako domyślną</label>
+<div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTrailerAdd()">Anuluj</button><button type="button" class="primary" onclick="window.saveNewTrailer()">Zapisz</button></div></div></div>
+<div id="trailerPickerModal" class="vehicle-modal" aria-hidden="true"><div class="vehicle-modal-card" role="dialog" aria-modal="true">
+<h3>Zapisane naczepy</h3><div id="trailerList" class="vehicle-list"></div>
+<div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTrailerPicker()">Zamknij</button></div></div></div>
 <div class="full"><label>17. Kolejni przewoźnicy</label><textarea id="successive"></textarea></div>
 <div class="full"><label>18. Zastrzeżenia przewoźnika</label><textarea id="reservations"></textarea></div>
 <div class="full"><label>19. Postanowienia specjalne</label><textarea id="special"></textarea></div>
@@ -829,6 +864,36 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
 })();
 </script>
 
+<script id="vehicle-profiles-js">
+(function(){
+  var TRACTOR_KEY="CMR_SAVED_TRACTORS_V1", TRAILER_KEY="CMR_SAVED_TRAILERS_V1";
+  function byId(id){return document.getElementById(id);}
+  function read(key){try{var x=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(x)?x:[];}catch(e){return [];}}
+  function save(key,list){try{localStorage.setItem(key,JSON.stringify(list));return true;}catch(e){alert("Nie udało się zapisać numeru w pamięci telefonu.");return false;}}
+  function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+  function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
+  function open(id){var e=byId(id);if(e){e.classList.add("open");e.setAttribute("aria-hidden","false");}}
+  function close(id){var e=byId(id);if(e){e.classList.remove("open");e.setAttribute("aria-hidden","true");}}
+  function sync(){if(typeof window.updateCMR==='function')window.updateCMR();}
+  function openAdd(type){var input=byId(type==='tractor'?'newTractorData':'newTrailerData'), source=byId(type);if(input)input.value=(source?source.value:"").trim();var d=byId(type==='tractor'?'newTractorDefault':'newTrailerDefault');if(d)d.checked=false;open(type==='tractor'?'tractorAddModal':'trailerAddModal');if(input)setTimeout(function(){input.focus();},50);}
+  function picker(type){render(type);open(type==='tractor'?'tractorPickerModal':'trailerPickerModal);}
+  function render(type){var key=type==='tractor'?TRACTOR_KEY:TRAILER_KEY, list=read(key), box=byId(type==='tractor'?'tractorList':'trailerList');if(!box)return;
+    if(!list.length){box.innerHTML='<div style="padding:12px;color:#666">Brak zapisanych numerów.</div>';return;}
+    box.innerHTML=list.map(function(x){return '<div class="vehicle-item"><div class="vehicle-item-main"><div class="vehicle-item-value">'+esc(x.text)+'</div>'+(x.default?'<div class="vehicle-item-default">★ Domyślny</div>':'')+'</div><div class="vehicle-item-actions"><button type="button" class="primary" data-v-action="select" data-v-id="'+esc(x.id)+'">Wybierz</button><button type="button" class="secondary" data-v-action="default" data-v-id="'+esc(x.id)+'">Domyślny</button><button type="button" class="danger" data-v-action="delete" data-v-id="'+esc(x.id)+'">Usuń</button></div></div>';}).join('');
+    box.querySelectorAll('[data-v-action]').forEach(function(btn){btn.addEventListener('click',function(){var action=btn.getAttribute('data-v-action'),cid=btn.getAttribute('data-v-id');if(action==='select')select(type,cid);else if(action==='default')setDefault(type,cid);else remove(type,cid);});});
+  }
+  function saveNew(type){var input=byId(type==='tractor'?'newTractorData':'newTrailerData'),text=(input?input.value:"").trim();if(!text){alert('Wpisz numer.');if(input)input.focus();return;}var key=type==='tractor'?TRACTOR_KEY:TRAILER_KEY,list=read(key),def=!!(byId(type==='tractor'?'newTractorDefault':'newTrailerDefault')||{}).checked;if(def)list.forEach(function(x){x.default=false;});list.push({id:id(),text:text,default:def});if(!save(key,list))return;var field=byId(type);if(field)field.value=text;sync();close(type==='tractor'?'tractorAddModal':'trailerAddModal');}
+  function select(type,cid){var key=type==='tractor'?TRACTOR_KEY:TRAILER_KEY,x=read(key).find(function(v){return v.id===cid;});if(!x)return;var field=byId(type);if(field)field.value=x.text;sync();close(type==='tractor'?'tractorPickerModal':'trailerPickerModal');}
+  function setDefault(type,cid){var key=type==='tractor'?TRACTOR_KEY:TRAILER_KEY,list=read(key);list.forEach(function(x){x.default=x.id===cid;});if(save(key,list))render(type);}
+  function remove(type,cid){var key=type==='tractor'?TRACTOR_KEY:TRAILER_KEY,list=read(key).filter(function(x){return x.id!==cid;});if(save(key,list))render(type);}
+  window.openTractorAdd=function(){openAdd('tractor');}; window.closeTractorAdd=function(){close('tractorAddModal');}; window.saveNewTractor=function(){saveNew('tractor');}; window.openTractorPicker=function(){picker('tractor');}; window.closeTractorPicker=function(){close('tractorPickerModal');};
+  window.openTrailerAdd=function(){openAdd('trailer');}; window.closeTrailerAdd=function(){close('trailerAddModal');}; window.saveNewTrailer=function(){saveNew('trailer');}; window.openTrailerPicker=function(){picker('trailer');}; window.closeTrailerPicker=function(){close('trailerPickerModal');};
+  function loadDefaults(){[['tractor',TRACTOR_KEY],['trailer',TRAILER_KEY]].forEach(function(pair){var field=byId(pair[0]);if(field&&!field.value){var x=read(pair[1]).find(function(v){return v.default;});if(x)field.value=x.text;}});}
+  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;['tractorAddModal','tractorPickerModal','trailerAddModal','trailerPickerModal'].forEach(close);});
+  loadDefaults();
+  setTimeout(function(){if(typeof window.updateCMR==='function')window.updateCMR();},0);
+})();
+</script>
 <script id="carrier-profiles-js">
 (function(){
   var KEY = "CMR_SAVED_CARRIERS_V3";
