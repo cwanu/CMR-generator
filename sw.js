@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cmr-v24';
+const CACHE_NAME = 'cmr-v25';
 const ASSETS = ['./','./index.html','./manifest.json'];
 self.addEventListener('install', event => { self.skipWaiting(); event.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS))); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
