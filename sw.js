@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cmr-reg-fit-v10';
+const CACHE_NAME = 'cmr-reg-fit-v11';
 const ASSETS = ['./','./index.html','./manifest.json'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
