@@ -622,11 +622,30 @@ ul. Tysiąclecia 6
     try{
       var papers=Array.prototype.slice.call(document.querySelectorAll('.preview .paper'));
       if(papers.length!==4) throw new Error('Brak 4 stron CMR.');
-      var SCALE=2, pdfPages=[];
+      var pdfPages=[];
       function loadImage(src){return new Promise(function(resolve,reject){var im=new Image();im.onload=function(){resolve(im);};im.onerror=function(){reject(new Error('Nie można wczytać tła CMR.'));};im.src=src;});}
       function wrapLine(ctx,text,maxWidth){if(!text)return [''];var words=text.split(/(\s+)/),lines=[],line='';words.forEach(function(part){var test=line+part;if(line&&ctx.measureText(test).width>maxWidth){lines.push(line.replace(/\s+$/,''));line=part.replace(/^\s+/,'');}else line=test;});lines.push(line.replace(/\s+$/,''));return lines;}
       function drawTextBox(ctx,el,paper,scale){var text=el.textContent||'';if(!text.trim())return;var pr=paper.getBoundingClientRect(),r=el.getBoundingClientRect(),cs=getComputedStyle(el);var x=(r.left-pr.left)*scale,y=(r.top-pr.top)*scale,w=r.width*scale,h=r.height*scale;var pl=(parseFloat(cs.paddingLeft)||0)*scale,prr=(parseFloat(cs.paddingRight)||0)*scale,pt=(parseFloat(cs.paddingTop)||0)*scale,pb=(parseFloat(cs.paddingBottom)||0)*scale,fs=(parseFloat(cs.fontSize)||8)*scale,lh=parseFloat(cs.lineHeight);lh=(Number.isFinite(lh)?lh:parseFloat(cs.fontSize)*1.18)*scale;var align=cs.textAlign||'left',color=cs.color||'#111',weight=cs.fontWeight||'400',family=cs.fontFamily||'Arial';var maxW=Math.max(1,w-pl-prr);ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.fillStyle=color;ctx.font=weight+' '+fs+'px '+family;ctx.textBaseline='top';ctx.textAlign=align;var lines=[];text.split('\n').forEach(function(p){lines=lines.concat(p===''?['']:wrapLine(ctx,p,maxW));});var yy=y+pt,ax=align==='center'?x+w/2:(align==='right'?x+w-prr:x+pl);for(var i=0;i<lines.length;i++){if(yy+fs>y+h-pb+fs*.15)break;ctx.fillText(lines[i],ax,yy);yy+=lh;}ctx.restore();}
-      async function renderPaper(paper){var rect=paper.getBoundingClientRect(),W=Math.max(1,Math.round(rect.width*SCALE)),H=Math.max(1,Math.round(rect.height*SCALE)),canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;var ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);var bg=paper.querySelector('.paper-bg');if(bg){var src=bg.currentSrc||bg.src;if(!src)throw new Error('Brak tła strony.');var im=await loadImage(src);ctx.drawImage(im,0,0,W,H);}Array.prototype.slice.call(paper.querySelectorAll('.o,.cargo')).forEach(function(el){drawTextBox(ctx,el,paper,SCALE);});return {dataUrl:canvas.toDataURL('image/jpeg',0.94),width:W,height:H};}
+      async function renderPaper(paper){
+        var bg=paper.querySelector('.paper-bg');
+        if(!bg) throw new Error('Brak tła strony.');
+        var src=bg.currentSrc||bg.src;
+        if(!src) throw new Error('Brak tła strony.');
+        var im=await loadImage(src);
+        /* Renderujemy do NATYWNEJ rozdzielczości tła, a nie do szerokości
+           podglądu. Dzięki temu PDF nie jest rozmazanym screenshotem telefonu. */
+        var W=im.naturalWidth||im.width||1240, H=im.naturalHeight||im.height||1755;
+        var canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
+        var ctx=canvas.getContext('2d',{alpha:false});
+        ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.drawImage(im,0,0,W,H);
+        var pr=paper.getBoundingClientRect();
+        Array.prototype.slice.call(paper.querySelectorAll('.o,.cargo')).forEach(function(el){
+          drawTextBox(ctx,el,paper,W/pr.width);
+        });
+        /* JPEG 0.99 przy pełnej rozdzielczości 1240x1755. Tło pozostaje
+           ostre, a PDF nadal ma rozsądny rozmiar na iPhonie. */
+        return {dataUrl:canvas.toDataURL('image/jpeg',0.99),width:W,height:H};
+      }
       var wraps=Array.prototype.slice.call(document.querySelectorAll('.preview .paper-wrap')),originalIndex=wraps.findIndex(function(w){return w.classList.contains('active');});if(originalIndex<0)originalIndex=0;
       function nextFrame(){return new Promise(function(resolve){requestAnimationFrame(function(){requestAnimationFrame(resolve);});});}
       for(var i=0;i<4;i++){wraps.forEach(function(w,n){w.classList.toggle('active',n===i);});await nextFrame();pdfPages.push(await renderPaper(wraps[i].querySelector('.paper')));}
@@ -643,7 +662,7 @@ ul. Tysiąclecia 6
       // wynik kliknięcia użytkownika. PDF ma natywny przycisk Udostępnij/Drukuj/Zapisz.
       if(pdfWin&&!pdfWin.closed){pdfWin.location.href=pdfUrl;setTimeout(function(){URL.revokeObjectURL(pdfUrl);},120000);}
       else { window.location.href=pdfUrl; }
-      byId('status').textContent='PDF gotowy: 4 strony CMR.';
+      byId('status').textContent='PDF gotowy: 4 strony CMR w pełnej rozdzielczości.';
     }catch(err){
       console.error(err);
       try{if(pdfWin&&!pdfWin.closed)pdfWin.close();}catch(e){}
