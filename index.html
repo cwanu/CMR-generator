@@ -615,205 +615,132 @@ ul. Tysiąclecia 6
   window.printCMR=async function(){
     update();
     try{
-      // Nie korzystamy już z window.print() ani z ukrytego printArea.
-      // Safari/iOS potrafi wydrukować taki DOM jako pustą stronę, a Chrome
-      // potrafi rozbić A4 na 8 stron. Zamiast tego robimy wierną "migawkę"
-      // każdego z czterech widocznych arkuszy do obrazu i składamy z nich PDF.
       var papers=Array.prototype.slice.call(document.querySelectorAll('.preview .paper'));
       if(papers.length!==4) throw new Error('Brak 4 stron CMR.');
 
       var SCALE=2;
       var pdfPages=[];
-
       function loadImage(src){
         return new Promise(function(resolve,reject){
           var im=new Image();
           im.onload=function(){resolve(im);};
-          im.onerror=reject;
+          im.onerror=function(){reject(new Error('Nie można wczytać tła CMR.'));};
           im.src=src;
         });
       }
-
       function wrapLine(ctx,text,maxWidth){
         if(!text) return [''];
-        var words=text.split(/(\s+)/);
-        var lines=[],line='';
+        var words=text.split(/(\s+)/), lines=[], line='';
         words.forEach(function(part){
           var test=line+part;
           if(line && ctx.measureText(test).width>maxWidth){
             lines.push(line.replace(/\s+$/,''));
             line=part.replace(/^\s+/,'');
-          }else{
-            line=test;
-          }
+          }else line=test;
         });
         lines.push(line.replace(/\s+$/,''));
         return lines;
       }
-
       function drawTextBox(ctx,el,paper,scale){
-        var text=el.textContent || '';
-        if(!text.trim()) return;
-        var pr=paper.getBoundingClientRect();
-        var r=el.getBoundingClientRect();
-        var cs=getComputedStyle(el);
-        var x=(r.left-pr.left)*scale;
-        var y=(r.top-pr.top)*scale;
-        var w=r.width*scale;
-        var h=r.height*scale;
-        var padL=(parseFloat(cs.paddingLeft)||0)*scale;
-        var padR=(parseFloat(cs.paddingRight)||0)*scale;
-        var padT=(parseFloat(cs.paddingTop)||0)*scale;
-        var padB=(parseFloat(cs.paddingBottom)||0)*scale;
-        var fs=(parseFloat(cs.fontSize)||8)*scale;
-        var lh=parseFloat(cs.lineHeight);
+        var text=el.textContent||''; if(!text.trim()) return;
+        var pr=paper.getBoundingClientRect(), r=el.getBoundingClientRect(), cs=getComputedStyle(el);
+        var x=(r.left-pr.left)*scale, y=(r.top-pr.top)*scale, w=r.width*scale, h=r.height*scale;
+        var pl=(parseFloat(cs.paddingLeft)||0)*scale, prr=(parseFloat(cs.paddingRight)||0)*scale;
+        var pt=(parseFloat(cs.paddingTop)||0)*scale, pb=(parseFloat(cs.paddingBottom)||0)*scale;
+        var fs=(parseFloat(cs.fontSize)||8)*scale, lh=parseFloat(cs.lineHeight);
         lh=(Number.isFinite(lh)?lh:parseFloat(cs.fontSize)*1.18)*scale;
-        var weight=cs.fontWeight||'400';
-        var family=cs.fontFamily||'Arial';
-        var align=cs.textAlign||'left';
-        var color=cs.color||'#111';
-        var maxW=Math.max(1,w-padL-padR);
-        var maxH=Math.max(1,h-padT-padB);
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(x,y,w,h);
-        ctx.clip();
-        ctx.fillStyle=color;
-        ctx.font=weight+' '+fs+'px '+family;
-        ctx.textBaseline='top';
-        ctx.textAlign=align;
-
-        var paragraphs=text.split('\n');
-        var lines=[];
-        paragraphs.forEach(function(p){
-          if(p==='') lines.push('');
-          else lines=lines.concat(wrapLine(ctx,p,maxW));
-        });
-        var yy=y+padT;
-        var anchorX=align==='center' ? x+w/2 : (align==='right' ? x+w-padR : x+padL);
-        for(var i=0;i<lines.length;i++){
-          if(yy+fs>y+h-padB+fs*0.15) break;
-          ctx.fillText(lines[i],anchorX,yy);
-          yy+=lh;
-        }
+        var align=cs.textAlign||'left', color=cs.color||'#111', weight=cs.fontWeight||'400', family=cs.fontFamily||'Arial';
+        var maxW=Math.max(1,w-pl-prr), maxH=Math.max(1,h-pt-pb);
+        ctx.save(); ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+        ctx.fillStyle=color; ctx.font=weight+' '+fs+'px '+family; ctx.textBaseline='top'; ctx.textAlign=align;
+        var lines=[]; text.split('\n').forEach(function(p){ lines=lines.concat(p===''?['']:wrapLine(ctx,p,maxW)); });
+        var yy=y+pt, ax=align==='center'?x+w/2:(align==='right'?x+w-prr:x+pl);
+        for(var i=0;i<lines.length;i++){ if(yy+fs>y+h-pb+fs*.15) break; ctx.fillText(lines[i],ax,yy); yy+=lh; }
         ctx.restore();
       }
-
       async function renderPaper(paper){
         var rect=paper.getBoundingClientRect();
-        var W=Math.max(1,Math.round(rect.width*SCALE));
-        var H=Math.max(1,Math.round(rect.height*SCALE));
-        var canvas=document.createElement('canvas');
-        canvas.width=W; canvas.height=H;
-        var ctx=canvas.getContext('2d');
-        ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
-
+        var W=Math.max(1,Math.round(rect.width*SCALE)), H=Math.max(1,Math.round(rect.height*SCALE));
+        var canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
+        var ctx=canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
         var bg=paper.querySelector('.paper-bg');
-        if(bg && bg.src){
-          var im=await loadImage(bg.src);
-          ctx.drawImage(im,0,0,W,H);
-        }
-
-        // Rysujemy dokładnie te pola, które użytkownik widzi w podglądzie.
-        Array.prototype.slice.call(paper.querySelectorAll('.o,.cargo')).forEach(function(el){
-          drawTextBox(ctx,el,paper,SCALE);
-        });
-
-        return {dataUrl:canvas.toDataURL('image/jpeg',0.94), width:W, height:H};
+        if(bg){ var src=bg.currentSrc||bg.src; if(!src) throw new Error('Brak tła strony.'); var im=await loadImage(src); ctx.drawImage(im,0,0,W,H); }
+        Array.prototype.slice.call(paper.querySelectorAll('.o,.cargo')).forEach(function(el){drawTextBox(ctx,el,paper,SCALE);});
+        return {dataUrl:canvas.toDataURL('image/jpeg',0.94),width:W,height:H};
       }
 
-      // Każda strona musi być na chwilę aktywna. W Safari element z
-      // display:none ma zerowy rect, więc wcześniejsza wersja tworzyła
-      // puste strony dla 2 i 4 oraz błędne rozmiary dla pozostałych.
       var wraps=Array.prototype.slice.call(document.querySelectorAll('.preview .paper-wrap'));
       var originalIndex=wraps.findIndex(function(w){return w.classList.contains('active');});
       if(originalIndex<0) originalIndex=0;
-      function nextFrame(){
-        return new Promise(function(resolve){
-          requestAnimationFrame(function(){
-            requestAnimationFrame(resolve);
-          });
-        });
-      }
-      for(var i=0;i<papers.length;i++){
+      function nextFrame(){return new Promise(function(resolve){requestAnimationFrame(function(){requestAnimationFrame(resolve);});});}
+      for(var i=0;i<4;i++){
         wraps.forEach(function(w,n){w.classList.toggle('active',n===i);});
         await nextFrame();
-        // pobieramy świeżą referencję po aktywowaniu konkretnej strony
-        var activePaper=wraps[i].querySelector('.paper');
-        if(!activePaper) throw new Error('Brak strony CMR '+(i+1)+'.');
-        pdfPages.push(await renderPaper(activePaper));
+        pdfPages.push(await renderPaper(wraps[i].querySelector('.paper')));
       }
       wraps.forEach(function(w,n){w.classList.toggle('active',n===originalIndex);});
       await nextFrame();
 
       function dataBytes(dataUrl){
-        var b64=dataUrl.split(',')[1];
-        var raw=atob(b64), out=new Uint8Array(raw.length);
-        for(var i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
-        return out;
+        var b64=dataUrl.split(',')[1], raw=atob(b64), out=new Uint8Array(raw.length);
+        for(var i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i); return out;
       }
       function concatBytes(parts){
-        var total=parts.reduce(function(n,p){return n+p.length;},0);
-        var out=new Uint8Array(total), pos=0;
-        parts.forEach(function(p){out.set(p,pos);pos+=p.length;});
-        return out;
+        var total=parts.reduce(function(n,p){return n+p.length;},0), out=new Uint8Array(total), pos=0;
+        parts.forEach(function(p){out.set(p,pos);pos+=p.length;}); return out;
       }
-      function ascii(s){ return new TextEncoder().encode(s); }
-
-      // Minimalny, samowystarczalny PDF: 4 strony A4, każda jako JPEG.
-      var objects=[];
-      function addObj(bytes){objects.push(bytes);return objects.length;}
-      var catalogId=addObj(null);
-      var pagesId=addObj(null);
-      var pageIds=[], imageIds=[];
-      var Wpt=595.28,Hpt=841.89;
-
-      pdfPages.forEach(function(dataUrl,idx){
-        var jpg=dataBytes(dataUrl.dataUrl);
-        // Wszystkie canvasy mają proporcje A4, więc jedna grafika = jedna strona.
-        var imageId=addObj(ascii('<< /Type /XObject /Subtype /Image /Width '+dataUrl.width+' /Height '+dataUrl.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n'));
-        objects[imageId-1]=concatBytes([objects[imageId-1],jpg,ascii('\nendstream')]);
-        imageIds.push(imageId);
+      function ascii(s){return new TextEncoder().encode(s);}
+      var objects=[], addObj=function(bytes){objects.push(bytes);return objects.length;};
+      var catalogId=addObj(null), pagesId=addObj(null), pageIds=[], imageIds=[], Wpt=595.28,Hpt=841.89;
+      pdfPages.forEach(function(pg,idx){
+        var jpg=dataBytes(pg.dataUrl);
+        var imageId=addObj(ascii('<< /Type /XObject /Subtype /Image /Width '+pg.width+' /Height '+pg.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n'));
+        objects[imageId-1]=concatBytes([objects[imageId-1],jpg,ascii('\nendstream')]); imageIds.push(imageId);
         var content=ascii('q\n'+Wpt+' 0 0 '+Hpt+' 0 0 cm\n/Im'+(idx+1)+' Do\nQ\n');
-        var contentId=addObj(ascii('<< /Length '+content.length+' >>\nstream\n'));
-        objects[contentId-1]=concatBytes([objects[contentId-1],content,ascii('endstream')]);
-        var pageId=addObj(null); pageIds.push({pageId:pageId,contentId:contentId});
+        var contentId=addObj(ascii('<< /Length '+content.length+' >>\nstream\n')); objects[contentId-1]=concatBytes([objects[contentId-1],content,ascii('endstream')]);
+        pageIds.push({pageId:addObj(null),contentId:contentId});
       });
-
       objects[catalogId-1]=ascii('<< /Type /Catalog /Pages '+pagesId+' 0 R >>');
-      objects[pagesId-1]=ascii('<< /Type /Pages /Kids ['+pageIds.map(function(x){return x.pageId+' 0 R';}).join(' ') +'] /Count 4 >>');
-      pageIds.forEach(function(x,idx){
-        objects[x.pageId-1]=ascii('<< /Type /Page /Parent '+pagesId+' 0 R /MediaBox [0 0 '+Wpt+' '+Hpt+'] /Resources << /XObject << /Im'+(idx+1)+' '+imageIds[idx]+' 0 R >> >> /Contents '+x.contentId+' 0 R >>');
-      });
-
-      var header=new Uint8Array([37,80,68,70,45,49,46,52,10,37,255,255,255,255,10]);
-      var chunks=[header], offsets=[0], pos=header.length;
-      objects.forEach(function(obj,idx){
-        var pre=ascii((idx+1)+' 0 obj\n');
-        var post=ascii('\nendobj\n');
-        offsets.push(pos);
-        chunks.push(pre,obj,post);
-        pos+=pre.length+obj.length+post.length;
-      });
-      var xrefPos=pos;
-      var xref='xref\n0 '+(objects.length+1)+'\n0000000000 65535 f \n';
+      objects[pagesId-1]=ascii('<< /Type /Pages /Kids ['+pageIds.map(function(x){return x.pageId+' 0 R';}).join(' ')+'] /Count 4 >>');
+      pageIds.forEach(function(x,idx){objects[x.pageId-1]=ascii('<< /Type /Page /Parent '+pagesId+' 0 R /MediaBox [0 0 '+Wpt+' '+Hpt+'] /Resources << /XObject << /Im'+(idx+1)+' '+imageIds[idx]+' 0 R >> >> /Contents '+x.contentId+' 0 R >>');});
+      var header=new Uint8Array([37,80,68,70,45,49,46,52,10,37,255,255,255,255,10]), chunks=[header], offsets=[0], pos=header.length;
+      objects.forEach(function(obj,idx){var pre=ascii((idx+1)+' 0 obj\n'), post=ascii('\nendobj\n'); offsets.push(pos); chunks.push(pre,obj,post); pos+=pre.length+obj.length+post.length;});
+      var xrefPos=pos, xref='xref\n0 '+(objects.length+1)+'\n0000000000 65535 f \n';
       for(var j=1;j<offsets.length;j++) xref+=String(offsets[j]).padStart(10,'0')+' 00000 n \n';
-      chunks.push(ascii(xref));
-      chunks.push(ascii('trailer\n<< /Size '+(objects.length+1)+' /Root '+catalogId+' 0 R >>\nstartxref\n'+xrefPos+'\n%%EOF'));
-
+      chunks.push(ascii(xref)); chunks.push(ascii('trailer\n<< /Size '+(objects.length+1)+' /Root '+catalogId+' 0 R >>\nstartxref\n'+xrefPos+'\n%%EOF'));
       var pdfBlob=new Blob([concatBytes(chunks)],{type:'application/pdf'});
-      var url=URL.createObjectURL(pdfBlob);
-      var w=window.open(url,'_blank');
-      if(!w){
-        // Safari może zablokować nowe okno. Wtedy otwieramy PDF w bieżącej karcie.
-        window.location.href=url;
-      }
-      setTimeout(function(){URL.revokeObjectURL(url);},120000);
-      byId('status').textContent='Gotowy PDF: 4 strony CMR.';
+      var pdfUrl=URL.createObjectURL(pdfBlob);
+
+      // Zamiast otwierać sam PDF i liczyć na to, że Safari łaskawie pokaże
+      // przyciski, pokazujemy użytkownikowi jawne akcje.
+      var old=document.getElementById('cmrPdfActions'); if(old) old.remove();
+      var panel=document.createElement('div'); panel.id='cmrPdfActions';
+      panel.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      panel.innerHTML='<div style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:22px;box-sizing:border-box;text-align:center;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.3)">'+
+        '<div style="font-size:22px;font-weight:700;margin-bottom:8px">CMR gotowy</div>'+ 
+        '<div style="font-size:15px;line-height:1.4;margin-bottom:18px">Utworzono PDF zawierający dokładnie 4 strony.</div>'+ 
+        '<a id="cmrOpenPdf" href="'+pdfUrl+'" target="_blank" style="display:block;background:#111;color:#fff;text-decoration:none;border-radius:10px;padding:13px;margin-bottom:10px;font-weight:700">📄 Otwórz PDF</a>'+ 
+        '<button id="cmrPrintPdf" type="button" style="display:block;width:100%;border:0;background:#e9e9e9;color:#111;border-radius:10px;padding:13px;margin-bottom:10px;font-weight:700;font-size:16px">🖨 Drukuj</button>'+ 
+        '<a id="cmrSavePdf" href="'+pdfUrl+'" download="CMR-4-strony.pdf" style="display:block;background:#e9e9e9;color:#111;text-decoration:none;border-radius:10px;padding:13px;margin-bottom:10px;font-weight:700">💾 Zapisz PDF</a>'+ 
+        '<button id="cmrClosePdf" type="button" style="border:0;background:transparent;color:#666;padding:8px">Zamknij</button>'+ 
+        '</div>';
+      document.body.appendChild(panel);
+      panel.querySelector('#cmrClosePdf').onclick=function(){panel.remove();};
+      panel.querySelector('#cmrOpenPdf').onclick=function(){setTimeout(function(){URL.revokeObjectURL(pdfUrl);},120000);};
+      panel.querySelector('#cmrSavePdf').onclick=function(){setTimeout(function(){URL.revokeObjectURL(pdfUrl);},120000);};
+      panel.querySelector('#cmrPrintPdf').onclick=function(){
+        var pw=window.open('','_blank');
+        if(!pw){ alert('Safari zablokował nowe okno. Użyj „Otwórz PDF”, a następnie opcji udostępniania/drukowania.'); return; }
+        var imgs=pdfPages.map(function(pg){return '<img src="'+pg.dataUrl+'" style="display:block;width:210mm;height:297mm;margin:0;padding:0;page-break-after:always;break-after:page;object-fit:fill;">';}).join('');
+        pw.document.open();
+        pw.document.write('<!doctype html><html><head><meta charset="utf-8"><title>CMR</title><style>@page{size:A4 portrait;margin:0}html,body{margin:0!important;padding:0!important;background:#fff!important}img:last-child{page-break-after:auto!important;break-after:auto!important}</style></head><body>'+imgs+'</body></html>');
+        pw.document.close();
+        setTimeout(function(){try{pw.focus();pw.print();}catch(e){}},900);
+      };
+      byId('status').textContent='PDF gotowy: 4 strony CMR. Wybierz Otwórz, Drukuj albo Zapisz PDF.';
     }catch(err){
       console.error(err);
-      alert('Nie udało się przygotować PDF. '+(err && err.message ? err.message : 'Błąd przeglądarki.'));
+      alert('Nie udało się przygotować PDF. '+(err&&err.message?err.message:'Błąd przeglądarki.'));
     }
   };
 

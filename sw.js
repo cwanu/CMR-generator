@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cmr-v29';
+const CACHE_NAME = 'cmr-v30';
 const ASSETS = ['./','./index.html','./manifest.json','./page-1.png','./page-2.png','./page-3.png','./page-4.png'];
 self.addEventListener('install', event => { self.skipWaiting(); event.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS))); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
