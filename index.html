@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CMR">
 <link rel="manifest" href="manifest.json">
-<title>CMR Generator v33</title>
+<title>CMR Generator v34</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#eef1f4;--card:#fff;--line:#dfe3e7;--muted:#6b7280;--ink:#111827;--accent:#111827;--soft:#f6f7f9}
@@ -123,7 +123,7 @@ textarea{min-height:58px}
 }
 
 
-/* V33: podgląd pozostaje DOM-em; PDF jest tworzony w 300 DPI, z tekstem nanoszonym na pełnowymiarowe strony. */
+/* V34: zapis przewoźników lokalnie; podgląd pozostaje DOM-em; PDF jest tworzony w 300 DPI, z tekstem nanoszonym na pełnowymiarowe strony. */
 .preview{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .preview .paper-wrap{display:none!important;width:100%;height:100%;margin:0;position:relative;overflow:hidden}
 .preview .paper-wrap.active{display:flex!important;align-items:center;justify-content:center}
@@ -134,6 +134,13 @@ textarea{min-height:58px}
   .preview .paper-wrap.active .paper{height:calc(100% - 18px)!important;width:auto!important;max-width:100%!important}
 }
 
+
+/* V34: zapisane profile przewoźników, tylko dane pola 16 */
+.carrier-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px;align-items:center}
+.carrier-tools select{flex:1 1 220px;min-width:0;border:1px solid #d5dae0;border-radius:10px;padding:10px 11px;font-size:14px;background:#fff;color:#111;outline:none}
+.carrier-tools button{min-height:40px;padding:9px 11px;font-size:12px}
+.carrier-hint{font-size:11px;color:#6b7280;margin-top:6px}
+@media(max-width:700px){.carrier-tools{display:grid;grid-template-columns:1fr 1fr}.carrier-tools select{grid-column:1/-1;width:100%}.carrier-tools button{width:100%;font-size:11px}.carrier-hint{line-height:1.25}}
 </style>
 
 <style id="cmr-no-zoom">
@@ -305,9 +312,21 @@ input, textarea, select, button {
 
 <div class="full"><label>13. Instrukcje nadawcy</label><textarea id="instructions"></textarea></div>
 <div class="full"><label>14. Postanowienia odnośnie przewoźnego</label><textarea id="freight"></textarea></div>
-<div class="full"><label>16. Przewoźnik</label><textarea id="carrier">TOMA-TRANS Tomasz Podgórski
+<div class="full">
+<label>16. Przewoźnik</label>
+<textarea id="carrier">TOMA-TRANS Tomasz Podgórski
 ul. Tysiąclecia 6
-98-432 Dzietrzkowice</textarea></div>
+98-432 Dzietrzkowice</textarea>
+<div class="carrier-tools">
+  <select id="savedCarrier" aria-label="Wybierz zapisanego przewoźnika">
+    <option value="">📋 Wybierz zapisanego przewoźnika</option>
+  </select>
+  <button class="secondary" type="button" onclick="window.saveCarrier()">💾 Zapisz przewoźnika</button>
+  <button class="secondary" type="button" onclick="window.setDefaultCarrier()">⭐ Ustaw jako domyślnego</button>
+  <button class="danger" type="button" onclick="window.deleteCarrier()">🗑 Usuń zapis</button>
+</div>
+<div class="carrier-hint">Zapisywana jest wyłącznie treść pola 16. Ciągnik i naczepa nie są zapisywane.</div>
+</div>
 <div><label>Ciągnik</label><input id="tractor" value="PNT65116"></div>
 <div><label>Naczepa</label><input id="trailer" value="EWI3UG6"></div>
 <div class="full"><label>17. Kolejni przewoźnicy</label><textarea id="successive"></textarea></div>
@@ -445,6 +464,78 @@ ul. Tysiąclecia 6
 
   function byId(id){ return document.getElementById(id); }
   function val(id){ var e=byId(id); return e ? (e.value || "") : ""; }
+
+  // V34: zapisane profile przewoźników. Dane są przechowywane lokalnie
+  // na urządzeniu użytkownika. Nie zapisujemy ciągnika ani naczepy.
+  var CARRIER_STORAGE_KEY = "cmr_saved_carriers_v1";
+  var DEFAULT_CARRIER_KEY = "cmr_default_carrier_v1";
+  function loadSavedCarriers(){
+    try{
+      var raw=localStorage.getItem(CARRIER_STORAGE_KEY);
+      var arr=raw?JSON.parse(raw):[];
+      return Array.isArray(arr)?arr.filter(function(x){return x&&typeof x.name==="string"&&x.name.trim();}):[];
+    }catch(e){ return []; }
+  }
+  function storeSavedCarriers(arr){
+    try{ localStorage.setItem(CARRIER_STORAGE_KEY,JSON.stringify(arr)); return true; }catch(e){ return false; }
+  }
+  function getDefaultCarrier(){ try{return localStorage.getItem(DEFAULT_CARRIER_KEY)||"";}catch(e){return "";} }
+  function setDefaultStored(name){ try{ if(name) localStorage.setItem(DEFAULT_CARRIER_KEY,name); else localStorage.removeItem(DEFAULT_CARRIER_KEY); return true; }catch(e){return false;} }
+  function carrierLabel(name){
+    var first=(name||"").split(/\n/)[0].trim();
+    return first || "Przewoźnik";
+  }
+  function refreshCarrierList(selectedName){
+    var sel=byId("savedCarrier"); if(!sel) return;
+    var current=selectedName!==undefined?selectedName:sel.value;
+    var arr=loadSavedCarriers();
+    sel.innerHTML='<option value="">📋 Wybierz zapisanego przewoźnika</option>';
+    arr.forEach(function(item){
+      var opt=document.createElement("option"); opt.value=item.name; opt.textContent=carrierLabel(item.name)+(item.name===getDefaultCarrier()?" ⭐":""); sel.appendChild(opt);
+    });
+    if(current && arr.some(function(x){return x.name===current;})) sel.value=current;
+  }
+  function applyCarrier(name){
+    if(!name) return;
+    var field=byId("carrier"); if(!field) return;
+    field.value=name;
+    var sel=byId("savedCarrier"); if(sel) sel.value=name;
+    update();
+    byId("status").textContent="Wybrano przewoźnika: "+carrierLabel(name)+". Ciągnik i naczepę wpisz osobno.";
+  }
+  window.saveCarrier=function(){
+    var name=val("carrier").trim();
+    if(!name){ alert("Wpisz dane przewoźnika w polu 16."); return; }
+    var arr=loadSavedCarriers();
+    var idx=arr.findIndex(function(x){return x.name===name;});
+    if(idx>=0){ arr[idx].name=name; }
+    else { arr.push({name:name}); }
+    if(!storeSavedCarriers(arr)){ alert("Nie udało się zapisać przewoźnika w pamięci tego urządzenia."); return; }
+    refreshCarrierList(name);
+    byId("status").textContent=(idx>=0?"Zaktualizowano":"Zapisano")+" przewoźnika: "+carrierLabel(name)+".";
+  };
+  window.setDefaultCarrier=function(){
+    var name=val("carrier").trim();
+    if(!name){ alert("Najpierw wpisz lub wybierz przewoźnika."); return; }
+    var arr=loadSavedCarriers();
+    if(!arr.some(function(x){return x.name===name;})){
+      arr.push({name:name});
+      if(!storeSavedCarriers(arr)){ alert("Nie udało się zapisać przewoźnika."); return; }
+    }
+    if(!setDefaultStored(name)){ alert("Nie udało się ustawić domyślnego przewoźnika."); return; }
+    refreshCarrierList(name);
+    byId("status").textContent="Ustawiono domyślnego przewoźnika: "+carrierLabel(name)+".";
+  };
+  window.deleteCarrier=function(){
+    var sel=byId("savedCarrier"), name=sel?sel.value:"";
+    if(!name){ alert("Wybierz zapis z listy, który chcesz usunąć."); return; }
+    var arr=loadSavedCarriers().filter(function(x){return x.name!==name;});
+    if(!storeSavedCarriers(arr)){ alert("Nie udało się usunąć zapisu."); return; }
+    if(getDefaultCarrier()===name) setDefaultStored("");
+    refreshCarrierList("");
+    byId("status").textContent="Usunięto zapis przewoźnika.";
+  };
+
   function setText(id, text){ document.querySelectorAll('[data-o="'+id+'"]').forEach(function(e){e.textContent=text || '';}); }
   function datePL(s){ if(!s) return ""; var a=s.split("-"); return a.length===3 ? a[2]+"."+a[1]+"."+a[0] : s; }
 
@@ -672,7 +763,7 @@ ul. Tysiąclecia 6
 
   window.clearCMR=function(){
     document.querySelectorAll("input,textarea").forEach(function(e){
-      if(e.id==="carrier") e.value="TOMA-TRANS Tomasz Podgórski\nul. Tysiąclecia 6\n98-432 Dzietrzkowice";
+      if(e.id==="carrier") e.value=getDefaultCarrier() || "TOMA-TRANS Tomasz Podgórski\nul. Tysiąclecia 6\n98-432 Dzietrzkowice";
       else if(e.id==="tractor") e.value="PNT65116";
       else if(e.id==="trailer") e.value="EWI3UG6";
       else e.value="";
@@ -731,9 +822,24 @@ ul. Tysiąclecia 6
     document.querySelectorAll(".paper .o, .paper .cargo").forEach(function(el){ ro.observe(el); });
   }
 
+  var savedCarrierSelect=byId("savedCarrier");
+  if(savedCarrierSelect){
+    savedCarrierSelect.addEventListener("change",function(){
+      if(this.value) applyCarrier(this.value);
+    });
+  }
+  refreshCarrierList();
+  // Jeżeli użytkownik ustawił domyślnego przewoźnika, ładowany jest automatycznie
+  // przy uruchomieniu aplikacji. Ciągnik i naczepa pozostają niezależne.
+  var defaultCarrier=getDefaultCarrier();
+  if(defaultCarrier && loadSavedCarriers().some(function(x){return x.name===defaultCarrier;})){
+    byId("carrier").value=defaultCarrier;
+  }
+
   makeRow();
   byId("jsWarning").style.display="none";
   update();
+  if(defaultCarrier) byId("status").textContent="Załadowano domyślnego przewoźnika: "+carrierLabel(defaultCarrier)+".";
   showPreviewPage(0);
 })();
 
