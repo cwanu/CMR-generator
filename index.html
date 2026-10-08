@@ -317,7 +317,51 @@ input, textarea, select, button {
 <div><label>Miejsce wystawienia</label><input id="issuePlace" placeholder="np. Sieradz"></div>
 <div><label>Data wystawienia</label><input id="issueDate" type="date"></div>
 <div><label>1. Nadawca</label><textarea id="sender"></textarea></div>
+<div class="carrier-profile-tools" aria-label="Zapisane profile nadawców">
+  <button type="button" class="carrier-tool add" onclick="window.openSenderAdd()">＋ Dodaj nadawcę</button>
+  <button type="button" class="carrier-tool choose" onclick="window.openSenderPicker()">👥 Wybierz nadawcę</button>
+</div>
+<div id="senderAddModal" class="carrier-modal" aria-hidden="true">
+  <div class="carrier-modal-card" role="dialog" aria-modal="true" aria-labelledby="senderAddTitle">
+    <h3 id="senderAddTitle">Dodaj nadawcę</h3>
+    <p>Zapisywane są wszystkie dane nadawcy z tego pola.</p>
+    <textarea id="newSenderData" placeholder="Nazwa firmy
+Adres
+Dodatkowe dane"></textarea>
+    <label class="carrier-default-check"><input type="checkbox" id="newSenderDefault"> Ustaw jako domyślnego</label>
+    <div class="carrier-modal-actions"><button type="button" class="secondary" onclick="window.closeSenderAdd()">Anuluj</button><button type="button" class="primary" onclick="window.saveNewSender()">Zapisz</button></div>
+  </div>
+</div>
+<div id="senderPickerModal" class="carrier-modal" aria-hidden="true">
+  <div class="carrier-modal-card" role="dialog" aria-modal="true" aria-labelledby="senderPickerTitle">
+    <h3 id="senderPickerTitle">Zapisani nadawcy</h3>
+    <div id="senderList" class="carrier-list"></div>
+    <div class="carrier-modal-actions"><button type="button" class="secondary" onclick="window.closeSenderPicker()">Zamknij</button></div>
+  </div>
+</div>
 <div><label>2. Odbiorca</label><textarea id="receiver"></textarea></div>
+<div class="carrier-profile-tools" aria-label="Zapisane profile odbiorców">
+  <button type="button" class="carrier-tool add" onclick="window.openReceiverAdd()">＋ Dodaj odbiorcę</button>
+  <button type="button" class="carrier-tool choose" onclick="window.openReceiverPicker()">👥 Wybierz odbiorcę</button>
+</div>
+<div id="receiverAddModal" class="carrier-modal" aria-hidden="true">
+  <div class="carrier-modal-card" role="dialog" aria-modal="true" aria-labelledby="receiverAddTitle">
+    <h3 id="receiverAddTitle">Dodaj odbiorcę</h3>
+    <p>Zapisywane są wszystkie dane odbiorcy z tego pola.</p>
+    <textarea id="newReceiverData" placeholder="Nazwa firmy
+Adres
+Dodatkowe dane"></textarea>
+    <label class="carrier-default-check"><input type="checkbox" id="newReceiverDefault"> Ustaw jako domyślnego</label>
+    <div class="carrier-modal-actions"><button type="button" class="secondary" onclick="window.closeReceiverAdd()">Anuluj</button><button type="button" class="primary" onclick="window.saveNewReceiver()">Zapisz</button></div>
+  </div>
+</div>
+<div id="receiverPickerModal" class="carrier-modal" aria-hidden="true">
+  <div class="carrier-modal-card" role="dialog" aria-modal="true" aria-labelledby="receiverPickerTitle">
+    <h3 id="receiverPickerTitle">Zapisani odbiorcy</h3>
+    <div id="receiverList" class="carrier-list"></div>
+    <div class="carrier-modal-actions"><button type="button" class="secondary" onclick="window.closeReceiverPicker()">Zamknij</button></div>
+  </div>
+</div>
 <div><label>3. Miejsce dostawy</label><input id="delivery"></div>
 <div><label>4. Miejsce załadunku</label><input id="loadingPlace"></div>
 <div><label>4. Data załadunku</label><input id="loadingDate" type="date"></div>
@@ -1002,6 +1046,101 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
     if(trailerClose){trailerClose.addEventListener('click',function(){closePicker('trailer');});}
     [tractorAdd,tractorPicker,trailerAdd,trailerPicker].forEach(function(m){if(m)m.addEventListener('click',function(e){if(e.target===m)closeModal(m);});});
     loadDefault();
+  });
+})();
+</script>
+<script id="sender-receiver-profiles-js">
+(function(){
+  function byId(id){ return document.getElementById(id); }
+  function read(key){ try { var x=JSON.parse(localStorage.getItem(key)||"[]"); return Array.isArray(x)?x:[]; } catch(e){ return []; } }
+  function save(key,x){ try { localStorage.setItem(key,JSON.stringify(x)); return true; } catch(e){ alert("Nie udało się zapisać danych w pamięci telefonu. Sprawdź, czy przeglądarka nie blokuje pamięci lokalnej."); return false; } }
+  function makeId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+  function esc(s){ return String(s||"").replace(/[&<>"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];}); }
+  function openModal(el){ if(el){ el.classList.add("open"); el.setAttribute("aria-hidden","false"); } }
+  function closeModal(el){ if(el){ el.classList.remove("open"); el.setAttribute("aria-hidden","true"); } }
+  function sync(){ if(typeof window.updateCMR==='function') window.updateCMR(); }
+
+  var cfg={
+    sender:{label:"nadawcę",Label:"Nadawca",field:"sender",add:"senderAddModal",picker:"senderPickerModal",text:"newSenderData",def:"newSenderDefault",list:"senderList",key:"CMR_SAVED_SENDERS_V1"},
+    receiver:{label:"odbiorcę",Label:"Odbiorca",field:"receiver",add:"receiverAddModal",picker:"receiverPickerModal",text:"newReceiverData",def:"newReceiverDefault",list:"receiverList",key:"CMR_SAVED_RECEIVERS_V1"}
+  };
+
+  function openAdd(type){
+    var c=cfg[type], t=byId(c.text);
+    if(t) t.value=(byId(c.field)?byId(c.field).value:"").trim();
+    var d=byId(c.def); if(d)d.checked=false;
+    openModal(byId(c.add));
+    if(t)setTimeout(function(){t.focus();},50);
+  }
+  function openPicker(type){ render(type); openModal(byId(cfg[type].picker)); }
+  function closeAdd(type){ closeModal(byId(cfg[type].add)); }
+  function closePicker(type){ closeModal(byId(cfg[type].picker)); }
+  function saveNew(type){
+    var c=cfg[type], t=byId(c.text), text=(t?t.value:"").trim();
+    if(!text){ alert("Wpisz dane "+c.label+"."); if(t)t.focus(); return; }
+    var list=read(c.key), isDefault=!!(byId(c.def)&&byId(c.def).checked);
+    if(isDefault)list.forEach(function(x){x.default=false;});
+    list.push({id:makeId(),text:text,default:isDefault});
+    if(!save(c.key,list))return;
+    if(byId(c.field))byId(c.field).value=text;
+    sync(); closeAdd(type);
+  }
+  function select(type,id){
+    var c=cfg[type], x=read(c.key).find(function(v){return v.id===id;}); if(!x)return;
+    if(byId(c.field))byId(c.field).value=x.text;
+    sync(); closePicker(type);
+  }
+  function setDefault(type,id){
+    var c=cfg[type], list=read(c.key); list.forEach(function(x){x.default=(x.id===id);}); if(save(c.key,list))render(type);
+  }
+  function remove(type,id){
+    var c=cfg[type], list=read(c.key).filter(function(x){return x.id!==id;}); if(save(c.key,list))render(type);
+  }
+  function render(type){
+    var c=cfg[type], box=byId(c.list); if(!box)return; var list=read(c.key);
+    if(!list.length){box.innerHTML='<div class="carrier-empty">Brak zapisanych '+(type==='sender'?'nadawców.':'odbiorców.')+'</div>';return;}
+    box.innerHTML=list.map(function(x){
+      return '<div class="carrier-item '+(x.default?'default':'')+'">'+
+        '<div class="carrier-item-text">'+esc(x.text)+(x.default?'\n★ Domyślny':'')+'</div>'+
+        '<div class="carrier-item-actions">'+
+        '<button class="use" type="button" data-action="use" data-id="'+esc(x.id)+'">Użyj</button>'+
+        '<button class="default" type="button" data-action="default" data-id="'+esc(x.id)+'">Ustaw domyślny</button>'+
+        '<button class="delete" type="button" data-action="delete" data-id="'+esc(x.id)+'">Usuń</button>'+
+        '</div></div>';
+    }).join('');
+    box.querySelectorAll('button[data-action]').forEach(function(btn){btn.addEventListener('click',function(){var id=btn.getAttribute('data-id'),a=btn.getAttribute('data-action');if(a==='use')select(type,id);else if(a==='default')setDefault(type,id);else remove(type,id);});});
+  }
+  function loadDefault(type){
+    var c=cfg[type], list=read(c.key), x=list.find(function(v){return v.default;});
+    if(x&&byId(c.field)&&!byId(c.field).value.trim()){byId(c.field).value=x.text;sync();}
+  }
+
+  window.openSenderAdd=function(){openAdd('sender');};
+  window.closeSenderAdd=function(){closeAdd('sender');};
+  window.openSenderPicker=function(){openPicker('sender');};
+  window.closeSenderPicker=function(){closePicker('sender');};
+  window.saveNewSender=function(){saveNew('sender');};
+  window.openReceiverAdd=function(){openAdd('receiver');};
+  window.closeReceiverAdd=function(){closeAdd('receiver');};
+  window.openReceiverPicker=function(){openPicker('receiver');};
+  window.closeReceiverPicker=function(){closePicker('receiver');};
+  window.saveNewReceiver=function(){saveNew('receiver');};
+
+  document.addEventListener("DOMContentLoaded",function(){
+    ['sender','receiver'].forEach(function(type){
+      var c=cfg[type], add=byId(c.add), picker=byId(c.picker);
+      var tools=document.querySelectorAll('.carrier-profile-tools');
+      var addBtn=document.querySelector('[onclick="window.open'+c.Label+'Add()"]');
+      var chooseBtn=document.querySelector('[onclick="window.open'+c.Label+'Picker()"]');
+      var saveBtn=add&&add.querySelector('.primary'), cancelBtn=add&&add.querySelector('.secondary'), closeBtn=picker&&picker.querySelector('.secondary');
+      if(addBtn){addBtn.removeAttribute('onclick');addBtn.addEventListener('click',function(){openAdd(type);});}
+      if(chooseBtn){chooseBtn.removeAttribute('onclick');chooseBtn.addEventListener('click',function(){openPicker(type);});}
+      if(saveBtn){saveBtn.removeAttribute('onclick');saveBtn.addEventListener('click',function(){saveNew(type);});}
+      if(cancelBtn){cancelBtn.removeAttribute('onclick');cancelBtn.addEventListener('click',function(){closeAdd(type);});}
+      if(closeBtn){closeBtn.removeAttribute('onclick');closeBtn.addEventListener('click',function(){closePicker(type);});}
+      [add,picker].forEach(function(m){if(m)m.addEventListener('click',function(e){if(e.target===m)closeModal(m);});});
+      loadDefault(type);
+    });
   });
 })();
 </script>
