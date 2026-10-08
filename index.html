@@ -831,80 +831,115 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
 
 <script id="carrier-profiles-js">
 (function(){
-  var KEY = "CMR_SAVED_CARRIERS_V2";
+  var KEY = "CMR_SAVED_CARRIERS_V3";
+  var OLD_KEYS = ["CMR_SAVED_CARRIERS_V2","CMR_SAVED_CARRIERS_V1"];
   function byId(id){ return document.getElementById(id); }
-  function carrierData(){ try { var x=JSON.parse(localStorage.getItem(KEY)||"[]"); return Array.isArray(x)?x:[]; } catch(e){ return []; } }
-  function saveCarrierData(x){ localStorage.setItem(KEY,JSON.stringify(x)); }
+  function read(key){ try { var x=JSON.parse(localStorage.getItem(key)||"[]"); return Array.isArray(x)?x:[]; } catch(e){ return []; } }
+  function carrierData(){
+    var list=read(KEY);
+    if(list.length) return list;
+    for(var i=0;i<OLD_KEYS.length;i++){
+      var old=read(OLD_KEYS[i]);
+      if(old.length){
+        try{ localStorage.setItem(KEY,JSON.stringify(old)); }catch(e){}
+        return old;
+      }
+    }
+    return [];
+  }
+  function saveCarrierData(x){
+    try{ localStorage.setItem(KEY,JSON.stringify(x)); return true; }
+    catch(e){ alert("Nie udało się zapisać przewoźnika w pamięci telefonu. Sprawdź, czy przeglądarka nie blokuje pamięci lokalnej."); return false; }
+  }
   function makeId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
   function esc(s){ return String(s||"").replace(/[&<>"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];}); }
-  function openModal(el){ if(el){el.classList.add("open");el.setAttribute("aria-hidden","false");} }
-  function closeModal(el){ if(el){el.classList.remove("open");el.setAttribute("aria-hidden","true");} }
+  function openModal(el){ if(el){ el.classList.add("open"); el.setAttribute("aria-hidden","false"); } }
+  function closeModal(el){ if(el){ el.classList.remove("open"); el.setAttribute("aria-hidden","true"); } }
+  function sync(){ if(typeof window.updateCMR==='function') window.updateCMR(); }
 
-  window.openCarrierAdd=function(){
+  function openAdd(){
     var t=byId("newCarrierData");
-    if(t) t.value=(byId("carrier")&&byId("carrier").value||"").trim();
-    var d=byId("newCarrierDefault"); if(d)d.checked=false;
+    if(t) t.value=(byId("carrier") ? byId("carrier").value : "").trim();
+    var d=byId("newCarrierDefault"); if(d) d.checked=false;
     openModal(byId("carrierAddModal"));
-    if(t)setTimeout(function(){t.focus();},30);
-  };
-  window.closeCarrierAdd=function(){closeModal(byId("carrierAddModal"));};
-  window.openCarrierPicker=function(){render();openModal(byId("carrierPickerModal"));};
-  window.closeCarrierPicker=function(){closeModal(byId("carrierPickerModal"));};
-
-  window.saveNewCarrier=function(){
-    var text=(byId("newCarrierData")&&byId("newCarrierData").value||"").trim();
-    if(!text){alert("Wpisz dane przewoźnika.");return;}
+    if(t) setTimeout(function(){t.focus();},50);
+  }
+  function openPicker(){ render(); openModal(byId("carrierPickerModal")); }
+  function closeAdd(){ closeModal(byId("carrierAddModal")); }
+  function closePicker(){ closeModal(byId("carrierPickerModal")); }
+  function saveNew(){
+    var t=byId("newCarrierData");
+    var text=(t?t.value:"").trim();
+    if(!text){ alert("Wpisz dane przewoźnika."); if(t)t.focus(); return; }
     var list=carrierData();
     var isDefault=!!(byId("newCarrierDefault")&&byId("newCarrierDefault").checked);
     if(isDefault) list.forEach(function(x){x.default=false;});
     list.push({id:makeId(),text:text,default:isDefault});
-    saveCarrierData(list);
+    if(!saveCarrierData(list)) return;
     if(byId("carrier")) byId("carrier").value=text;
-    if(typeof window.updateCMR==='function') window.updateCMR();
-    window.closeCarrierAdd();
-  };
-  window.selectCarrier=function(cid){
-    var x=carrierData().find(function(v){return v.id===cid;}); if(!x)return;
+    sync();
+    closeAdd();
+  }
+  function selectCarrier(cid){
+    var list=carrierData(), x=list.find(function(v){return v.id===cid;});
+    if(!x)return;
     if(byId("carrier")) byId("carrier").value=x.text;
-    if(typeof window.updateCMR==='function') window.updateCMR();
-    window.closeCarrierPicker();
-  };
-  window.setDefaultCarrier=function(cid){
-    var list=carrierData(); list.forEach(function(x){x.default=(x.id===cid);}); saveCarrierData(list); render();
-  };
-  window.deleteCarrier=function(cid){
-    saveCarrierData(carrierData().filter(function(x){return x.id!==cid;})); render();
-  };
+    sync();
+    closePicker();
+  }
+  function setDefault(cid){
+    var list=carrierData(); list.forEach(function(x){x.default=(x.id===cid);});
+    if(saveCarrierData(list)) render();
+  }
+  function deleteCarrier(cid){
+    var list=carrierData().filter(function(x){return x.id!==cid;});
+    if(saveCarrierData(list)) render();
+  }
   function render(){
     var box=byId("carrierList"); if(!box)return;
     var list=carrierData();
     if(!list.length){box.innerHTML='<div class="carrier-empty">Brak zapisanych przewoźników.</div>';return;}
     box.innerHTML=list.map(function(x){
-      return '<div class="carrier-item '+(x.default?'default':'')+'">' +
-        '<div class="carrier-item-text">'+esc(x.text)+(x.default?'\n★ Domyślny':'')+'</div>' +
-        '<div class="carrier-item-actions">' +
-        '<button class="use" type="button" data-action="use" data-id="'+esc(x.id)+'">Użyj</button>' +
-        '<button class="default" type="button" data-action="default" data-id="'+esc(x.id)+'">Ustaw domyślny</button>' +
-        '<button class="delete" type="button" data-action="delete" data-id="'+esc(x.id)+'">Usuń</button>' +
+      return '<div class="carrier-item '+(x.default?'default':'')+'">'+
+        '<div class="carrier-item-text">'+esc(x.text)+(x.default?'\n★ Domyślny':'')+'</div>'+
+        '<div class="carrier-item-actions">'+
+        '<button class="use" type="button" data-action="use" data-id="'+esc(x.id)+'">Użyj</button>'+
+        '<button class="default" type="button" data-action="default" data-id="'+esc(x.id)+'">Ustaw domyślny</button>'+
+        '<button class="delete" type="button" data-action="delete" data-id="'+esc(x.id)+'">Usuń</button>'+
         '</div></div>';
     }).join('');
     box.querySelectorAll('button[data-action]').forEach(function(btn){
       btn.addEventListener('click',function(){
         var cid=btn.getAttribute('data-id'), action=btn.getAttribute('data-action');
-        if(action==='use') window.selectCarrier(cid);
-        else if(action==='default') window.setDefaultCarrier(cid);
-        else if(action==='delete') window.deleteCarrier(cid);
+        if(action==='use')selectCarrier(cid); else if(action==='default')setDefault(cid); else if(action==='delete')deleteCarrier(cid);
       });
     });
   }
   function loadDefault(){
     var list=carrierData(), x=list.find(function(v){return v.default;});
-    if(x && byId("carrier") && !byId("carrier").value.trim()) byId("carrier").value=x.text;
-    if(x && typeof window.updateCMR==='function') window.updateCMR();
+    if(x && byId("carrier") && !byId("carrier").value.trim()){ byId("carrier").value=x.text; sync(); }
   }
+
+  window.openCarrierAdd=openAdd;
+  window.closeCarrierAdd=closeAdd;
+  window.openCarrierPicker=openPicker;
+  window.closeCarrierPicker=closePicker;
+  window.saveNewCarrier=saveNew;
+
   document.addEventListener("DOMContentLoaded",function(){
+    var add=byId("carrierAddModal"), picker=byId("carrierPickerModal");
+    var addBtn=document.querySelector('.carrier-tool.add');
+    var chooseBtn=document.querySelector('.carrier-tool.choose');
+    var saveBtn=document.querySelector('#carrierAddModal .primary');
+    var cancelBtn=document.querySelector('#carrierAddModal .secondary');
+    var closeBtn=document.querySelector('#carrierPickerModal .secondary');
+    if(addBtn){addBtn.removeAttribute('onclick');addBtn.addEventListener('click',openAdd);}
+    if(chooseBtn){chooseBtn.removeAttribute('onclick');chooseBtn.addEventListener('click',openPicker);}
+    if(saveBtn){saveBtn.removeAttribute('onclick');saveBtn.addEventListener('click',saveNew);}
+    if(cancelBtn){cancelBtn.removeAttribute('onclick');cancelBtn.addEventListener('click',closeAdd);}
+    if(closeBtn){closeBtn.removeAttribute('onclick');closeBtn.addEventListener('click',closePicker);}
+    [add,picker].forEach(function(m){if(m)m.addEventListener('click',function(e){if(e.target===m)closeModal(m);});});
     loadDefault();
-    document.querySelectorAll(".carrier-modal").forEach(function(m){m.addEventListener("click",function(e){if(e.target===m)closeModal(m);});});
   });
 })();
 </script>
