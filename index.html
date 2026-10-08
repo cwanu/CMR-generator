@@ -135,7 +135,7 @@ textarea{min-height:58px}
 }
 
 
-/* V41: ciągnik i naczepa działają dokładnie jak profile przewoźników */
+/* V42: ciągnik i naczepa działają dokładnie jak profile przewoźników */
 .vehicle-profile-tools{display:flex;gap:8px;margin:7px 0 2px;flex-wrap:wrap}
 .vehicle-tool{border:0;border-radius:10px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .vehicle-tool.add{background:#111;color:#fff}.vehicle-tool.choose{background:#f1f3f5;color:#111}
@@ -877,73 +877,131 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
   var OLD_TRAILER_KEYS=["CMR_SAVED_TRAILERS_V2","CMR_SAVED_TRAILERS_V1"];
   function byId(id){return document.getElementById(id);}
   function read(key){try{var x=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(x)?x:[];}catch(e){return [];}}
-  function data(type){
+  function vehicleData(type){
     var key=type==='tractor'?TRACTOR_KEY:TRAILER_KEY;
     var oldKeys=type==='tractor'?OLD_TRACTOR_KEYS:OLD_TRAILER_KEYS;
     var list=read(key);
     if(list.length)return list;
-    for(var i=0;i<oldKeys.length;i++){var old=read(oldKeys[i]);if(old.length){try{localStorage.setItem(key,JSON.stringify(old));}catch(e){}return old;}}
+    for(var i=0;i<oldKeys.length;i++){
+      var old=read(oldKeys[i]);
+      if(old.length){try{localStorage.setItem(key,JSON.stringify(old));}catch(e){}return old;}
+    }
     return [];
   }
-  function save(type,list){
+  function saveVehicleData(type,list){
     try{localStorage.setItem(type==='tractor'?TRACTOR_KEY:TRAILER_KEY,JSON.stringify(list));return true;}
     catch(e){alert("Nie udało się zapisać numeru w pamięci telefonu. Sprawdź, czy przeglądarka nie blokuje pamięci lokalnej.");return false;}
   }
   function makeId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
-  function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
+  function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return c==="&"?"&amp;":c==="<"?"&lt;":c===">"?"&gt;":c===String.fromCharCode(34)?"&quot;":"&#39;";});}
   function openModal(el){if(el){el.classList.add("open");el.setAttribute("aria-hidden","false");}}
   function closeModal(el){if(el){el.classList.remove("open");el.setAttribute("aria-hidden","true");}}
   function sync(){if(typeof window.updateCMR==='function')window.updateCMR();}
+
   function openAdd(type){
-    var input=byId(type==='tractor'?'newTractorData':'newTrailerData');
-    if(input)input.value=(byId(type)?byId(type).value:"").trim();
-    var d=byId(type==='tractor'?'newTractorDefault':'newTrailerDefault');if(d)d.checked=false;
-    openModal(byId(type==='tractor'?'tractorAddModal':'trailerAddModal'));
-    if(input)setTimeout(function(){input.focus();},50);
+    var t=byId(type==='tractor'?"newTractorData":"newTrailerData");
+    if(t)t.value=(byId(type)?byId(type).value:"").trim();
+    var d=byId(type==='tractor'?"newTractorDefault":"newTrailerDefault");if(d)d.checked=false;
+    openModal(byId(type==='tractor'?"tractorAddModal":"trailerAddModal"));
+    if(t)setTimeout(function(){t.focus();},50);
   }
-  function openPicker(type){render(type);openModal(byId(type==='tractor'?'tractorPickerModal':'trailerPickerModal'));}
-  function closeAdd(type){closeModal(byId(type==='tractor'?'tractorAddModal':'trailerAddModal'));}
-  function closePicker(type){closeModal(byId(type==='tractor'?'tractorPickerModal':'trailerPickerModal'));}
+  function openPicker(type){render(type);openModal(byId(type==='tractor'?"tractorPickerModal":"trailerPickerModal"));}
+  function closeAdd(type){closeModal(byId(type==='tractor'?"tractorAddModal":"trailerAddModal"));}
+  function closePicker(type){closeModal(byId(type==='tractor'?"tractorPickerModal":"trailerPickerModal"));}
+
   function saveNew(type){
-    var input=byId(type==='tractor'?'newTractorData':'newTrailerData'), text=(input?input.value:"").trim();
-    if(!text){alert("Wpisz numer.");if(input)input.focus();return;}
-    var list=data(type), d=byId(type==='tractor'?'newTractorDefault':'newTrailerDefault'), isDefault=!!(d&&d.checked);
+    var t=byId(type==='tractor'?"newTractorData":"newTrailerData");
+    var text=(t?t.value:"").trim();
+    if(!text){alert("Wpisz numer.");if(t)t.focus();return;}
+    var list=vehicleData(type);
+    var d=byId(type==='tractor'?"newTractorDefault":"newTrailerDefault");
+    var isDefault=!!(d&&d.checked);
     if(isDefault)list.forEach(function(x){x.default=false;});
     list.push({id:makeId(),text:text,default:isDefault});
-    if(!save(type,list))return;
+    if(!saveVehicleData(type,list))return;
     if(byId(type))byId(type).value=text;
     sync();closeAdd(type);
   }
-  function select(type,id){var x=data(type).find(function(v){return v.id===id;});if(!x)return;if(byId(type))byId(type).value=x.text;sync();closePicker(type);}
-  function setDefault(type,id){var list=data(type);list.forEach(function(x){x.default=(x.id===id);});if(save(type,list))render(type);}
-  function remove(type,id){var list=data(type).filter(function(x){return x.id!==id;});if(save(type,list))render(type);}
+  function selectVehicle(type,id){
+    var list=vehicleData(type),x=list.find(function(v){return v.id===id;});
+    if(!x)return;
+    if(byId(type))byId(type).value=x.text;
+    sync();closePicker(type);
+  }
+  function setDefault(type,id){
+    var list=vehicleData(type);list.forEach(function(x){x.default=(x.id===id);});
+    if(saveVehicleData(type,list))render(type);
+  }
+  function deleteVehicle(type,id){
+    var list=vehicleData(type).filter(function(x){return x.id!==id;});
+    if(saveVehicleData(type,list))render(type);
+  }
   function render(type){
-    var box=byId(type==='tractor'?'tractorList':'trailerList');if(!box)return;
-    var list=data(type);
-    if(!list.length){box.innerHTML='<div style="padding:12px;color:#666">Brak zapisanych numerów.</div>';return;}
-    box.innerHTML=list.map(function(x){return '<div class="vehicle-item"><div class="vehicle-item-main"><div class="vehicle-item-value">'+esc(x.text)+'</div>'+(x.default?'<div class="vehicle-item-default">★ Domyślny</div>':'')+'</div><div class="vehicle-item-actions"><button type="button" class="primary" data-v-action="use" data-v-id="'+esc(x.id)+'">Użyj</button><button type="button" class="secondary" data-v-action="default" data-v-id="'+esc(x.id)+'">Ustaw domyślny</button><button type="button" class="danger" data-v-action="delete" data-v-id="'+esc(x.id)+'">Usuń</button></div></div>';}).join('');
-    box.querySelectorAll('button[data-v-action]').forEach(function(btn){btn.addEventListener('click',function(){var a=btn.getAttribute('data-v-action'),id=btn.getAttribute('data-v-id');if(a==='use')select(type,id);else if(a==='default')setDefault(type,id);else remove(type,id);});});
+    var box=byId(type==='tractor'?"tractorList":"trailerList");if(!box)return;
+    var list=vehicleData(type);
+    if(!list.length){box.innerHTML='<div style="padding:12px;color:#666;text-align:center">Brak zapisanych numerów.</div>';return;}
+    box.innerHTML=list.map(function(x){
+      return '<div class="vehicle-item '+(x.default?'default':'')+'">'+
+        '<div class="vehicle-item-main"><div class="vehicle-item-value">'+esc(x.text)+'</div>'+(x.default?'<div class="vehicle-item-default">★ Domyślny</div>':'')+'</div>'+
+        '<div class="vehicle-item-actions">'+
+        '<button type="button" class="primary" data-v-action="use" data-v-id="'+esc(x.id)+'">Użyj</button>'+
+        '<button type="button" class="secondary" data-v-action="default" data-v-id="'+esc(x.id)+'">Ustaw domyślny</button>'+
+        '<button type="button" class="danger" data-v-action="delete" data-v-id="'+esc(x.id)+'">Usuń</button>'+
+        '</div></div>';
+    }).join('');
+    box.querySelectorAll('button[data-v-action]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var id=btn.getAttribute('data-v-id'),action=btn.getAttribute('data-v-action');
+        if(action==='use')selectVehicle(type,id);else if(action==='default')setDefault(type,id);else if(action==='delete')deleteVehicle(type,id);
+      });
+    });
   }
-  function loadDefault(){['tractor','trailer'].forEach(function(type){var f=byId(type);if(!f||f.value.trim())return;var x=data(type).find(function(v){return v.default;});if(x){f.value=x.text;sync();}});}
-  function bind(){
-    var ta=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery ciągników"] .vehicle-tool.add');
-    var tc=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery ciągników"] .vehicle-tool.choose');
-    var na=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery naczep"] .vehicle-tool.add');
-    var nc=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery naczep"] .vehicle-tool.choose');
-    if(ta){ta.addEventListener('click',function(){openAdd('tractor');});}
-    if(tc){tc.addEventListener('click',function(){openPicker('tractor');});}
-    if(na){na.addEventListener('click',function(){openAdd('trailer');});}
-    if(nc){nc.addEventListener('click',function(){openPicker('trailer');});}
-    var ts=byId('tractorAddModal')&&byId('tractorAddModal').querySelector('.primary');var tx=byId('tractorAddModal')&&byId('tractorAddModal').querySelector('.secondary');var tp=byId('tractorPickerModal')&&byId('tractorPickerModal').querySelector('.secondary');
-    var ns=byId('trailerAddModal')&&byId('trailerAddModal').querySelector('.primary');var nx=byId('trailerAddModal')&&byId('trailerAddModal').querySelector('.secondary');var np=byId('trailerPickerModal')&&byId('trailerPickerModal').querySelector('.secondary');
-    if(ts)ts.addEventListener('click',function(){saveNew('tractor');});if(tx)tx.addEventListener('click',function(){closeAdd('tractor');});if(tp)tp.addEventListener('click',function(){closePicker('tractor');});
-    if(ns)ns.addEventListener('click',function(){saveNew('trailer');});if(nx)nx.addEventListener('click',function(){closeAdd('trailer');});if(np)np.addEventListener('click',function(){closePicker('trailer');});
-    ['tractorAddModal','tractorPickerModal','trailerAddModal','trailerPickerModal'].forEach(function(id){var m=byId(id);if(m)m.addEventListener('click',function(e){if(e.target===m)closeModal(m);});});
+  function loadDefault(){
+    ['tractor','trailer'].forEach(function(type){
+      var list=vehicleData(type),x=list.find(function(v){return v.default;});
+      if(x&&byId(type)&&!byId(type).value.trim()){byId(type).value=x.text;sync();}
+    });
+  }
+
+  window.openTractorAdd=function(){openAdd('tractor');};
+  window.closeTractorAdd=function(){closeAdd('tractor');};
+  window.openTractorPicker=function(){openPicker('tractor');};
+  window.closeTractorPicker=function(){closePicker('tractor');};
+  window.saveNewTractor=function(){saveNew('tractor');};
+  window.openTrailerAdd=function(){openAdd('trailer');};
+  window.closeTrailerAdd=function(){closeAdd('trailer');};
+  window.openTrailerPicker=function(){openPicker('trailer');};
+  window.closeTrailerPicker=function(){closePicker('trailer');};
+  window.saveNewTrailer=function(){saveNew('trailer');};
+
+  document.addEventListener("DOMContentLoaded",function(){
+    var tractorAdd=byId("tractorAddModal"),tractorPicker=byId("tractorPickerModal");
+    var trailerAdd=byId("trailerAddModal"),trailerPicker=byId("trailerPickerModal");
+    var tractorTools=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery ciągników"]');
+    var trailerTools=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery naczep"]');
+    var tractorAddBtn=tractorTools&&tractorTools.querySelector('.vehicle-tool.add');
+    var tractorChooseBtn=tractorTools&&tractorTools.querySelector('.vehicle-tool.choose');
+    var trailerAddBtn=trailerTools&&trailerTools.querySelector('.vehicle-tool.add');
+    var trailerChooseBtn=trailerTools&&trailerTools.querySelector('.vehicle-tool.choose');
+    var tractorSave=tractorAdd&&tractorAdd.querySelector('.primary');
+    var tractorCancel=tractorAdd&&tractorAdd.querySelector('.secondary');
+    var tractorClose=tractorPicker&&tractorPicker.querySelector('.secondary');
+    var trailerSave=trailerAdd&&trailerAdd.querySelector('.primary');
+    var trailerCancel=trailerAdd&&trailerAdd.querySelector('.secondary');
+    var trailerClose=trailerPicker&&trailerPicker.querySelector('.secondary');
+    if(tractorAddBtn){tractorAddBtn.addEventListener('click',function(){openAdd('tractor');});}
+    if(tractorChooseBtn){tractorChooseBtn.addEventListener('click',function(){openPicker('tractor');});}
+    if(trailerAddBtn){trailerAddBtn.addEventListener('click',function(){openAdd('trailer');});}
+    if(trailerChooseBtn){trailerChooseBtn.addEventListener('click',function(){openPicker('trailer');});}
+    if(tractorSave){tractorSave.addEventListener('click',function(){saveNew('tractor');});}
+    if(tractorCancel){tractorCancel.addEventListener('click',function(){closeAdd('tractor');});}
+    if(tractorClose){tractorClose.addEventListener('click',function(){closePicker('tractor');});}
+    if(trailerSave){trailerSave.addEventListener('click',function(){saveNew('trailer');});}
+    if(trailerCancel){trailerCancel.addEventListener('click',function(){closeAdd('trailer');});}
+    if(trailerClose){trailerClose.addEventListener('click',function(){closePicker('trailer');});}
+    [tractorAdd,tractorPicker,trailerAdd,trailerPicker].forEach(function(m){if(m)m.addEventListener('click',function(e){if(e.target===m)closeModal(m);});});
     loadDefault();
-  }
-  window.openTractorAdd=function(){openAdd('tractor');};window.closeTractorAdd=function(){closeAdd('tractor');};window.openTractorPicker=function(){openPicker('tractor');};window.closeTractorPicker=function(){closePicker('tractor');};window.saveNewTractor=function(){saveNew('tractor');};
-  window.openTrailerAdd=function(){openAdd('trailer');};window.closeTrailerAdd=function(){closeAdd('trailer');};window.openTrailerPicker=function(){openPicker('trailer');};window.closeTrailerPicker=function(){closePicker('trailer');};window.saveNewTrailer=function(){saveNew('trailer');};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+  });
 })();
 </script>
 <script id="carrier-profiles-js">
