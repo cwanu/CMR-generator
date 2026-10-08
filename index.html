@@ -321,6 +321,57 @@ ul. Tysiąclecia 6
     return row;
   }
 
+  function fitElementFont(el, maxPx, minPx, step){
+    if(!el) return;
+    var max = maxPx || 15;
+    var min = minPx || 3;
+    var inc = step || 0.2;
+
+    el.style.fontSize = max + "px";
+    el.style.overflow = "hidden";
+    el.style.boxSizing = "border-box";
+
+    // Zostawiamy aktualne zawijanie tekstu. Sprawdzamy zarówno szerokość,
+    // jak i wysokość, więc działa dla inputów, textarea oraz pól podglądu.
+    var guard = 100;
+    while(guard-- > 0){
+      var tooWide = el.scrollWidth > el.clientWidth + 1;
+      var tooTall = el.scrollHeight > el.clientHeight + 1;
+      if(!tooWide && !tooTall) break;
+      var current = parseFloat(getComputedStyle(el).fontSize) || max;
+      if(current <= min + 0.01) break;
+      el.style.fontSize = Math.max(min, current - inc) + "px";
+    }
+  }
+
+  function fitFormFonts(){
+    document.querySelectorAll("#app input, #app textarea").forEach(function(el){
+      // Pola towarowe również mają automatyczne dopasowanie.
+      var max = el.classList.contains("goods-input") ? 13 : 15;
+      var min = el.tagName === "INPUT" ? 9 : 8;
+      fitElementFont(el, max, min, 0.2);
+    });
+  }
+
+  function fitAllPreviewFonts(){
+    // Każdy element tekstowy na każdej z czterech kopii CMR.
+    // Dzięki temu nie trzeba dopisywać kolejnych wyjątków przy każdym nowym polu.
+    document.querySelectorAll(".paper .o, .paper .cargo").forEach(function(el){
+      var max = parseFloat(getComputedStyle(el).fontSize) || 8;
+      var min = el.classList.contains("cargo") ? 3.2 : 3.2;
+      fitElementFont(el, max, min, 0.1);
+    });
+  }
+
+  function fitPreviewFonts(){
+    // Kilka przebiegów jest celowych: po aktualizacji treści przeglądarka
+    // potrzebuje jednej klatki na przeliczenie wymiarów elementów.
+    requestAnimationFrame(function(){
+      fitAllPreviewFonts();
+      requestAnimationFrame(fitAllPreviewFonts);
+    });
+  }
+
   function update(){
     setText("oCmr",val("cmr"));
     setText("oSender",val("sender"));
@@ -346,6 +397,9 @@ ul. Tysiąclecia 6
     if(field23 && field23.value !== carrierName) field23.value = carrierName;
     setText("o23", carrierName);
     setText("oExtra",val("extra"));
+
+    fitFormFonts();
+    requestAnimationFrame(fitPreviewFonts);
 
     document.querySelectorAll(".cargoPreview").forEach(function(box){ box.innerHTML=""; });
     var rows=document.querySelectorAll(".goods-row");
@@ -411,10 +465,13 @@ ul. Tysiąclecia 6
   function showPreviewPage(index){
     previewWraps.forEach(function(w,i){ w.classList.toggle("active", i===index); });
     previewTabs.forEach(function(b,i){ b.classList.toggle("active", i===index); });
+    requestAnimationFrame(fitPreviewFonts);
   }
   previewTabs.forEach(function(btn){
     btn.addEventListener("click", function(){ showPreviewPage(parseInt(btn.getAttribute("data-page"),10)||0); });
   });
+
+  window.addEventListener("resize", function(){ fitFormFonts(); requestAnimationFrame(fitPreviewFonts); });
 
   makeRow();
   byId("jsWarning").style.display="none";
