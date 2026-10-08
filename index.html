@@ -495,22 +495,85 @@ ul. Tysiąclecia 6
   window.updateCMR=update;
 
   window.printCMR=function(){
+    /*
+      V21: drukujemy dokładnie te same .paper, które są w podglądzie.
+      Nie używamy już ukrytego #printArea ani @media print głównej strony.
+      Safari/iOS potrafi pominąć dynamicznie pokazany element przy generowaniu
+      podglądu wydruku. Otwieramy więc osobny dokument drukowania i wkładamy
+      do niego 1:1 cztery aktualne strony CMR.
+    */
     update();
-    var area=byId("printArea");
-    area.innerHTML="";
-    // Drukujemy bezpośrednio cztery elementy .paper, a nie ich ukryte
-    // kontenery .paper-wrap. Safari potrafi pominąć ukryty wrapper w trybie druku.
-    document.querySelectorAll(".preview .paper").forEach(function(p){
-      var clone=p.cloneNode(true);
-      clone.removeAttribute("style");
-      clone.classList.add("print-paper");
-      area.appendChild(clone);
+
+    var printWin = window.open('', '_blank');
+    if(!printWin){
+      alert('Przeglądarka zablokowała okno wydruku. Zezwól tej witrynie na wyskakujące okna.');
+      return;
+    }
+
+    var pages = Array.prototype.slice.call(document.querySelectorAll('.preview .paper'));
+    var html = '';
+
+    html += '<!doctype html><html lang="pl"><head>';
+    html += '<meta charset="utf-8">';
+    html += '<meta name="viewport" content="width=device-width,initial-scale=1">';
+    html += '<title>CMR - wydruk</title>';
+    html += '<style>';
+    html += '@page{size:A4 portrait;margin:0}';
+    html += 'html,body{margin:0;padding:0;background:#fff;width:210mm}';
+    html += 'body{font-family:Arial,sans-serif}';
+    html += '.paper{position:relative;width:210mm!important;height:297mm!important;min-width:210mm!important;max-width:210mm!important;margin:0!important;padding:0!important;background:#fff;overflow:hidden;box-shadow:none;border-radius:0;display:block;box-sizing:border-box;page-break-after:always;break-after:page}';
+    html += '.paper:last-child{page-break-after:auto;break-after:auto}';
+    html += '.paper-bg{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;object-fit:fill!important;z-index:0}';
+    html += '.paper .o,.paper .cargo,.paper .cargoPreview{position:absolute;box-sizing:border-box;z-index:2}';
+    html += '.o{overflow:hidden;font-size:9px;line-height:1.18;word-break:break-word;white-space:pre-wrap;padding:1.2px 1.6px}';
+    html += '.cargo{overflow:hidden;font-size:8px;line-height:1.15;word-break:break-word;white-space:pre-wrap;padding:1px 1.2px}';
+    html += '.carrier-overlay{white-space:pre-line!important}';
+    html += 'img{max-width:none}';
+    html += '</style></head><body>';
+
+    pages.forEach(function(paper){
+      var clone = paper.cloneNode(true);
+      clone.removeAttribute('style');
+      clone.classList.add('print-paper');
+      html += clone.outerHTML;
     });
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
-        window.print();
-      });
-    });
+
+    html += '</body></html>';
+
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+
+    function doPrint(){
+      try{
+        printWin.focus();
+        printWin.print();
+      }catch(e){
+        /* Safari może potrzebować chwili po zamknięciu document.write. */
+        setTimeout(function(){
+          try{ printWin.focus(); printWin.print(); }catch(ignore){}
+        },500);
+      }
+    }
+
+    var imgs = printWin.document.images;
+    var remaining = imgs.length;
+    if(!remaining){
+      setTimeout(doPrint,250);
+      return;
+    }
+    function imageReady(){
+      remaining--;
+      if(remaining<=0) setTimeout(doPrint,250);
+    }
+    for(var i=0;i<imgs.length;i++){
+      if(imgs[i].complete) imageReady();
+      else {
+        imgs[i].addEventListener('load',imageReady,{once:true});
+        imgs[i].addEventListener('error',imageReady,{once:true});
+      }
+    }
+    setTimeout(doPrint,2500);
   };
 
   window.clearCMR=function(){
