@@ -135,14 +135,19 @@ textarea{min-height:58px}
 }
 
 
-/* V40: tractor/trailer profiles built exactly like carrier profiles */
-.vehicle-profile-tools{display:flex;gap:8px;margin:7px 0 12px;flex-wrap:wrap}
+/* V41: ciągnik i naczepa działają dokładnie jak profile przewoźników */
+.vehicle-profile-tools{display:flex;gap:8px;margin:7px 0 2px;flex-wrap:wrap}
 .vehicle-tool{border:0;border-radius:10px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .vehicle-tool.add{background:#111;color:#fff}.vehicle-tool.choose{background:#f1f3f5;color:#111}
-.vehicle-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:10000}
-.vehicle-modal.open{display:flex}.vehicle-modal-card{width:min(460px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.3)}
-.vehicle-modal-card h3{margin:0 0 8px}.vehicle-modal-card p{margin:0 0 12px;color:#555;font-size:14px}.vehicle-modal-card textarea{min-height:90px}.vehicle-list{display:grid;gap:8px;margin:12px 0}.vehicle-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid #ddd;border-radius:9px;padding:10px}.vehicle-item-main{min-width:0}.vehicle-item-value{font-weight:700;word-break:break-word}.vehicle-item-default{font-size:12px;color:#287a3e;margin-top:3px}.vehicle-item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.vehicle-item-actions button{width:auto;margin:0;padding:9px 10px;font-size:13px}.vehicle-modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.vehicle-modal-actions button{width:auto;margin:0}.vehicle-default-check{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:600}.vehicle-default-check input{width:auto;margin:0}
-@media(max-width:500px){.vehicle-profile-tools{display:grid;grid-template-columns:1fr 1fr}.vehicle-tool{width:100%}.vehicle-item{grid-template-columns:1fr}.vehicle-item-actions{justify-content:stretch}.vehicle-item-actions button{flex:1}}
+.vehicle-modal{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:100000}
+.vehicle-modal.open{display:flex}
+.vehicle-modal-card{width:min(560px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:16px;padding:18px;box-shadow:0 16px 50px rgba(0,0,0,.3)}
+.vehicle-modal-card h3{margin:0 0 6px;font-size:19px}.vehicle-modal-card p{margin:0 0 12px;color:#555;font-size:13px}
+.vehicle-modal-card input[type=text]{width:100%;box-sizing:border-box;margin-bottom:10px}
+.vehicle-default-check{display:flex;align-items:center;gap:8px;font-size:13px;margin:4px 0 12px}.vehicle-default-check input{width:auto}
+.vehicle-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.vehicle-modal-actions button{width:auto;margin:0}
+.vehicle-list{display:grid;gap:8px;margin:12px 0}.vehicle-item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #ddd;border-radius:10px;padding:10px}.vehicle-item-main{min-width:0}.vehicle-item-value{font-weight:700;word-break:break-word}.vehicle-item-default{font-size:12px;color:#287a3e;margin-top:3px}.vehicle-item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.vehicle-item-actions button{width:auto;margin:0;padding:9px 10px;font-size:13px}
+@media(max-width:500px){.vehicle-profile-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}.vehicle-tool{width:100%;padding:8px 7px;font-size:12px}.vehicle-item{display:block}.vehicle-item-actions{margin-top:8px;justify-content:stretch}.vehicle-item-actions button{flex:1}}
 </style>
 <style id="carrier-profiles-ui">
 .carrier-profile-tools{display:flex;gap:8px;margin:7px 0 2px;flex-wrap:wrap}
@@ -866,51 +871,39 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
 
 <script id="vehicle-profiles-js">
 (function(){
-  var TRACTOR_KEY="CMR_SAVED_TRACTORS_V2", TRAILER_KEY="CMR_SAVED_TRAILERS_V2";
-  var OLD_TRACTOR_KEYS=["CMR_SAVED_TRACTORS_V1"], OLD_TRAILER_KEYS=["CMR_SAVED_TRAILERS_V1"];
+  var TRACTOR_KEY="CMR_SAVED_TRACTORS_V3";
+  var TRAILER_KEY="CMR_SAVED_TRAILERS_V3";
+  var OLD_TRACTOR_KEYS=["CMR_SAVED_TRACTORS_V2","CMR_SAVED_TRACTORS_V1"];
+  var OLD_TRAILER_KEYS=["CMR_SAVED_TRAILERS_V2","CMR_SAVED_TRAILERS_V1"];
   function byId(id){return document.getElementById(id);}
-  function read(key, oldKeys){
-    try{
-      var x=JSON.parse(localStorage.getItem(key)||"");
-      if(Array.isArray(x)) return x;
-      for(var i=0;i<oldKeys.length;i++){
-        var y=JSON.parse(localStorage.getItem(oldKeys[i])||"");
-        if(Array.isArray(y) && y.length){localStorage.setItem(key,JSON.stringify(y));return y;}
-      }
-    }catch(e){}
+  function read(key){try{var x=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(x)?x:[];}catch(e){return [];}}
+  function data(type){
+    var key=type==='tractor'?TRACTOR_KEY:TRAILER_KEY;
+    var oldKeys=type==='tractor'?OLD_TRACTOR_KEYS:OLD_TRAILER_KEYS;
+    var list=read(key);
+    if(list.length)return list;
+    for(var i=0;i<oldKeys.length;i++){var old=read(oldKeys[i]);if(old.length){try{localStorage.setItem(key,JSON.stringify(old));}catch(e){}return old;}}
     return [];
   }
-  function data(type){return type==='tractor'?read(TRACTOR_KEY,OLD_TRACTOR_KEYS):read(TRAILER_KEY,OLD_TRAILER_KEYS);}
-  function save(type,list){try{localStorage.setItem(type==='tractor'?TRACTOR_KEY:TRAILER_KEY,JSON.stringify(list));return true;}catch(e){alert("Nie udało się zapisać numeru w pamięci telefonu.");return false;}}
+  function save(type,list){
+    try{localStorage.setItem(type==='tractor'?TRACTOR_KEY:TRAILER_KEY,JSON.stringify(list));return true;}
+    catch(e){alert("Nie udało się zapisać numeru w pamięci telefonu. Sprawdź, czy przeglądarka nie blokuje pamięci lokalnej.");return false;}
+  }
   function makeId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
   function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
-  function openModal(m){if(m){m.classList.add("open");m.setAttribute("aria-hidden","false");}}
-  function closeModal(m){if(m){m.classList.remove("open");m.setAttribute("aria-hidden","true");}}
+  function openModal(el){if(el){el.classList.add("open");el.setAttribute("aria-hidden","false");}}
+  function closeModal(el){if(el){el.classList.remove("open");el.setAttribute("aria-hidden","true");}}
+  function sync(){if(typeof window.updateCMR==='function')window.updateCMR();}
   function openAdd(type){
-    var input=byId(type==='tractor'?'newTractorData':'newTrailerData'), source=byId(type);
-    if(input) input.value=(source?source.value:"").trim();
-    var d=byId(type==='tractor'?'newTractorDefault':'newTrailerDefault'); if(d)d.checked=false;
+    var input=byId(type==='tractor'?'newTractorData':'newTrailerData');
+    if(input)input.value=(byId(type)?byId(type).value:"").trim();
+    var d=byId(type==='tractor'?'newTractorDefault':'newTrailerDefault');if(d)d.checked=false;
     openModal(byId(type==='tractor'?'tractorAddModal':'trailerAddModal'));
     if(input)setTimeout(function(){input.focus();},50);
   }
   function openPicker(type){render(type);openModal(byId(type==='tractor'?'tractorPickerModal':'trailerPickerModal'));}
-  function render(type){
-    var box=byId(type==='tractor'?'tractorList':'trailerList'); if(!box)return;
-    var list=data(type);
-    if(!list.length){box.innerHTML='<div style="padding:12px;color:#666">Brak zapisanych numerów.</div>';return;}
-    box.innerHTML=list.map(function(x){
-      return '<div class="vehicle-item"><div class="vehicle-item-main"><div class="vehicle-item-value">'+esc(x.text)+'</div>'+(x.default?'<div class="vehicle-item-default">★ Domyślny</div>':'')+'</div><div class="vehicle-item-actions">'+
-      '<button type="button" class="primary" data-v-action="select" data-v-id="'+esc(x.id)+'">Użyj</button>'+
-      '<button type="button" class="secondary" data-v-action="default" data-v-id="'+esc(x.id)+'">Ustaw domyślny</button>'+
-      '<button type="button" class="danger" data-v-action="delete" data-v-id="'+esc(x.id)+'">Usuń</button></div></div>';
-    }).join('');
-    box.querySelectorAll('button[data-v-action]').forEach(function(btn){
-      btn.addEventListener('click',function(){
-        var action=btn.getAttribute('data-v-action'), id=btn.getAttribute('data-v-id');
-        if(action==='select')select(type,id); else if(action==='default')setDefault(type,id); else remove(type,id);
-      });
-    });
-  }
+  function closeAdd(type){closeModal(byId(type==='tractor'?'tractorAddModal':'trailerAddModal'));}
+  function closePicker(type){closeModal(byId(type==='tractor'?'tractorPickerModal':'trailerPickerModal'));}
   function saveNew(type){
     var input=byId(type==='tractor'?'newTractorData':'newTrailerData'), text=(input?input.value:"").trim();
     if(!text){alert("Wpisz numer.");if(input)input.focus();return;}
@@ -918,50 +911,39 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
     if(isDefault)list.forEach(function(x){x.default=false;});
     list.push({id:makeId(),text:text,default:isDefault});
     if(!save(type,list))return;
-    var field=byId(type);if(field)field.value=text;
-    if(typeof window.updateCMR==='function')window.updateCMR();
-    closeModal(byId(type==='tractor'?'tractorAddModal':'trailerAddModal'));
+    if(byId(type))byId(type).value=text;
+    sync();closeAdd(type);
   }
-  function select(type,id){
-    var x=data(type).find(function(v){return v.id===id;});if(!x)return;
-    var field=byId(type);if(field)field.value=x.text;
-    if(typeof window.updateCMR==='function')window.updateCMR();
-    closeModal(byId(type==='tractor'?'tractorPickerModal':'trailerPickerModal'));
-  }
+  function select(type,id){var x=data(type).find(function(v){return v.id===id;});if(!x)return;if(byId(type))byId(type).value=x.text;sync();closePicker(type);}
   function setDefault(type,id){var list=data(type);list.forEach(function(x){x.default=(x.id===id);});if(save(type,list))render(type);}
   function remove(type,id){var list=data(type).filter(function(x){return x.id!==id;});if(save(type,list))render(type);}
-  function loadDefault(){[['tractor',TRACTOR_KEY,OLD_TRACTOR_KEYS],['trailer',TRAILER_KEY,OLD_TRAILER_KEYS]].forEach(function(pair){var f=byId(pair[0]);if(f&&!f.value){var x=read(pair[1],pair[2]).find(function(v){return v.default;});if(x)f.value=x.text;}});}
+  function render(type){
+    var box=byId(type==='tractor'?'tractorList':'trailerList');if(!box)return;
+    var list=data(type);
+    if(!list.length){box.innerHTML='<div style="padding:12px;color:#666">Brak zapisanych numerów.</div>';return;}
+    box.innerHTML=list.map(function(x){return '<div class="vehicle-item"><div class="vehicle-item-main"><div class="vehicle-item-value">'+esc(x.text)+'</div>'+(x.default?'<div class="vehicle-item-default">★ Domyślny</div>':'')+'</div><div class="vehicle-item-actions"><button type="button" class="primary" data-v-action="use" data-v-id="'+esc(x.id)+'">Użyj</button><button type="button" class="secondary" data-v-action="default" data-v-id="'+esc(x.id)+'">Ustaw domyślny</button><button type="button" class="danger" data-v-action="delete" data-v-id="'+esc(x.id)+'">Usuń</button></div></div>';}).join('');
+    box.querySelectorAll('button[data-v-action]').forEach(function(btn){btn.addEventListener('click',function(){var a=btn.getAttribute('data-v-action'),id=btn.getAttribute('data-v-id');if(a==='use')select(type,id);else if(a==='default')setDefault(type,id);else remove(type,id);});});
+  }
+  function loadDefault(){['tractor','trailer'].forEach(function(type){var f=byId(type);if(!f||f.value.trim())return;var x=data(type).find(function(v){return v.default;});if(x){f.value=x.text;sync();}});}
   function bind(){
-    var ids=[
-      ['.vehicle-tool.add[aria-label=""]',''],
-    ];
     var ta=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery ciągników"] .vehicle-tool.add');
     var tc=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery ciągników"] .vehicle-tool.choose');
     var na=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery naczep"] .vehicle-tool.add');
     var nc=document.querySelector('.vehicle-profile-tools[aria-label="Zapisane numery naczep"] .vehicle-tool.choose');
-    if(ta)ta.addEventListener('click',function(){openAdd('tractor');});
-    if(tc)tc.addEventListener('click',function(){openPicker('tractor');});
-    if(na)na.addEventListener('click',function(){openAdd('trailer');});
-    if(nc)nc.addEventListener('click',function(){openPicker('trailer');});
-    var tSave=byId('tractorAddModal')?.querySelector('.primary');
-    var tCancel=byId('tractorAddModal')?.querySelector('.secondary');
-    var tClose=byId('tractorPickerModal')?.querySelector('.secondary');
-    var nSave=byId('trailerAddModal')?.querySelector('.primary');
-    var nCancel=byId('trailerAddModal')?.querySelector('.secondary');
-    var nClose=byId('trailerPickerModal')?.querySelector('.secondary');
-    if(tSave)tSave.addEventListener('click',function(){saveNew('tractor');});
-    if(tCancel)tCancel.addEventListener('click',function(){closeModal(byId('tractorAddModal'));});
-    if(tClose)tClose.addEventListener('click',function(){closeModal(byId('tractorPickerModal'));});
-    if(nSave)nSave.addEventListener('click',function(){saveNew('trailer');});
-    if(nCancel)nCancel.addEventListener('click',function(){closeModal(byId('trailerAddModal'));});
-    if(nClose)nClose.addEventListener('click',function(){closeModal(byId('trailerPickerModal'));});
+    if(ta){ta.addEventListener('click',function(){openAdd('tractor');});}
+    if(tc){tc.addEventListener('click',function(){openPicker('tractor');});}
+    if(na){na.addEventListener('click',function(){openAdd('trailer');});}
+    if(nc){nc.addEventListener('click',function(){openPicker('trailer');});}
+    var ts=byId('tractorAddModal')&&byId('tractorAddModal').querySelector('.primary');var tx=byId('tractorAddModal')&&byId('tractorAddModal').querySelector('.secondary');var tp=byId('tractorPickerModal')&&byId('tractorPickerModal').querySelector('.secondary');
+    var ns=byId('trailerAddModal')&&byId('trailerAddModal').querySelector('.primary');var nx=byId('trailerAddModal')&&byId('trailerAddModal').querySelector('.secondary');var np=byId('trailerPickerModal')&&byId('trailerPickerModal').querySelector('.secondary');
+    if(ts)ts.addEventListener('click',function(){saveNew('tractor');});if(tx)tx.addEventListener('click',function(){closeAdd('tractor');});if(tp)tp.addEventListener('click',function(){closePicker('tractor');});
+    if(ns)ns.addEventListener('click',function(){saveNew('trailer');});if(nx)nx.addEventListener('click',function(){closeAdd('trailer');});if(np)np.addEventListener('click',function(){closePicker('trailer');});
     ['tractorAddModal','tractorPickerModal','trailerAddModal','trailerPickerModal'].forEach(function(id){var m=byId(id);if(m)m.addEventListener('click',function(e){if(e.target===m)closeModal(m);});});
     loadDefault();
   }
-  window.openTractorAdd=function(){openAdd('tractor');};window.closeTractorAdd=function(){closeModal(byId('tractorAddModal'));};window.saveNewTractor=function(){saveNew('tractor');};window.openTractorPicker=function(){openPicker('tractor');};window.closeTractorPicker=function(){closeModal(byId('tractorPickerModal'));};
-  window.openTrailerAdd=function(){openAdd('trailer');};window.closeTrailerAdd=function(){closeModal(byId('trailerAddModal'));};window.saveNewTrailer=function(){saveNew('trailer');};window.openTrailerPicker=function(){openPicker('trailer');};window.closeTrailerPicker=function(){closeModal(byId('trailerPickerModal'));};
+  window.openTractorAdd=function(){openAdd('tractor');};window.closeTractorAdd=function(){closeAdd('tractor');};window.openTractorPicker=function(){openPicker('tractor');};window.closeTractorPicker=function(){closePicker('tractor');};window.saveNewTractor=function(){saveNew('tractor');};
+  window.openTrailerAdd=function(){openAdd('trailer');};window.closeTrailerAdd=function(){closeAdd('trailer');};window.openTrailerPicker=function(){openPicker('trailer');};window.closeTrailerPicker=function(){closePicker('trailer');};window.saveNewTrailer=function(){saveNew('trailer');};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
-  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;['tractorAddModal','tractorPickerModal','trailerAddModal','trailerPickerModal'].forEach(function(id){closeModal(byId(id));});});
 })();
 </script>
 <script id="carrier-profiles-js">
