@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CMR">
 <link rel="manifest" href="manifest.json">
-<title>CMR Generator v17</title>
+<title>CMR Generator v20</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#eef1f4;--card:#fff;--line:#dfe3e7;--muted:#6b7280;--ink:#111827;--accent:#111827;--soft:#f6f7f9}
@@ -74,8 +74,10 @@ button:active{transform:scale(.98)}
 
  body{background:#fff}
  body>*{display:none!important}
- #printArea{display:block!important}
- #printArea .paper{width:210mm;height:297mm;margin:0;page-break-after:always}
+ #printArea{display:block!important;visibility:visible!important;width:210mm!important;margin:0!important;padding:0!important}
+ #printArea .paper{display:block!important;visibility:visible!important;position:relative!important;width:210mm!important;height:297mm!important;margin:0!important;page-break-after:always!important;break-after:page!important;box-shadow:none!important;border-radius:0!important;overflow:hidden!important}
+ #printArea .paper-bg{display:block!important;visibility:visible!important;width:100%!important;height:100%!important}
+ #printArea .o,#printArea .cargo{display:block!important;visibility:visible!important}
  @page{size:A4;margin:0}
 }
 
@@ -496,8 +498,19 @@ ul. Tysiąclecia 6
     update();
     var area=byId("printArea");
     area.innerHTML="";
-    document.querySelectorAll(".paper").forEach(function(p){ area.appendChild(p.cloneNode(true)); });
-    window.print();
+    // Drukujemy bezpośrednio cztery elementy .paper, a nie ich ukryte
+    // kontenery .paper-wrap. Safari potrafi pominąć ukryty wrapper w trybie druku.
+    document.querySelectorAll(".preview .paper").forEach(function(p){
+      var clone=p.cloneNode(true);
+      clone.removeAttribute("style");
+      clone.classList.add("print-paper");
+      area.appendChild(clone);
+    });
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        window.print();
+      });
+    });
   };
 
   window.clearCMR=function(){
