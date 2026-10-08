@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CMR">
 <link rel="manifest" href="manifest.json">
-<title>CMR Generator v34</title>
+<title>CMR Generator v33</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#eef1f4;--card:#fff;--line:#dfe3e7;--muted:#6b7280;--ink:#111827;--accent:#111827;--soft:#f6f7f9}
@@ -123,7 +123,7 @@ textarea{min-height:58px}
 }
 
 
-/* V34: zapis przewoźników lokalnie; podgląd pozostaje DOM-em; PDF jest tworzony w 300 DPI, z tekstem nanoszonym na pełnowymiarowe strony. */
+/* V33: podgląd pozostaje DOM-em; PDF jest tworzony w 300 DPI, z tekstem nanoszonym na pełnowymiarowe strony. */
 .preview{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .preview .paper-wrap{display:none!important;width:100%;height:100%;margin:0;position:relative;overflow:hidden}
 .preview .paper-wrap.active{display:flex!important;align-items:center;justify-content:center}
@@ -134,13 +134,20 @@ textarea{min-height:58px}
   .preview .paper-wrap.active .paper{height:calc(100% - 18px)!important;width:auto!important;max-width:100%!important}
 }
 
-
-/* V34: zapisane profile przewoźników, tylko dane pola 16 */
-.carrier-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px;align-items:center}
-.carrier-tools select{flex:1 1 220px;min-width:0;border:1px solid #d5dae0;border-radius:10px;padding:10px 11px;font-size:14px;background:#fff;color:#111;outline:none}
-.carrier-tools button{min-height:40px;padding:9px 11px;font-size:12px}
-.carrier-hint{font-size:11px;color:#6b7280;margin-top:6px}
-@media(max-width:700px){.carrier-tools{display:grid;grid-template-columns:1fr 1fr}.carrier-tools select{grid-column:1/-1;width:100%}.carrier-tools button{width:100%;font-size:11px}.carrier-hint{line-height:1.25}}
+</style>
+<style id="carrier-profiles-ui">
+.carrier-profile-tools{display:flex;gap:8px;margin:7px 0 2px;flex-wrap:wrap}
+.carrier-tool{border:0;border-radius:10px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.carrier-tool.add{background:#111;color:#fff}.carrier-tool.choose{background:#f1f3f5;color:#111}
+.carrier-modal{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:100000}
+.carrier-modal.open{display:flex}
+.carrier-modal-card{width:min(560px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:16px;padding:18px;box-shadow:0 16px 50px rgba(0,0,0,.3)}
+.carrier-modal-card h3{margin:0 0 6px;font-size:19px}.carrier-modal-card p{margin:0 0 12px;color:#555;font-size:13px}
+#newCarrierData{width:100%;min-height:130px;resize:vertical;box-sizing:border-box;margin-bottom:10px}
+.carrier-default-check{display:flex;align-items:center;gap:8px;font-size:13px;margin:4px 0 12px}.carrier-default-check input{width:auto}
+.carrier-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.carrier-modal-actions button{min-width:100px}
+.carrier-list{display:flex;flex-direction:column;gap:8px}.carrier-item{border:1px solid #ddd;border-radius:12px;padding:11px}.carrier-item.default{border-color:#111;box-shadow:0 0 0 1px #111 inset}.carrier-item-text{white-space:pre-line;font-size:13px;line-height:1.35;margin-bottom:9px}.carrier-item-actions{display:flex;gap:7px;flex-wrap:wrap}.carrier-item-actions button{border:0;border-radius:8px;padding:7px 9px;cursor:pointer;font-size:12px;font-weight:700}.carrier-item-actions .use{background:#111;color:#fff}.carrier-item-actions .default{background:#e9ecef;color:#111}.carrier-item-actions .delete{background:#ffe5e5;color:#9b0000}
+.carrier-empty{color:#666;text-align:center;padding:18px 8px;font-size:13px}
 </style>
 
 <style id="cmr-no-zoom">
@@ -312,20 +319,28 @@ input, textarea, select, button {
 
 <div class="full"><label>13. Instrukcje nadawcy</label><textarea id="instructions"></textarea></div>
 <div class="full"><label>14. Postanowienia odnośnie przewoźnego</label><textarea id="freight"></textarea></div>
-<div class="full">
-<label>16. Przewoźnik</label>
-<textarea id="carrier">TOMA-TRANS Tomasz Podgórski
+<div class="full"><label>16. Przewoźnik</label><textarea id="carrier">TOMA-TRANS Tomasz Podgórski
 ul. Tysiąclecia 6
-98-432 Dzietrzkowice</textarea>
-<div class="carrier-tools">
-  <select id="savedCarrier" aria-label="Wybierz zapisanego przewoźnika">
-    <option value="">📋 Wybierz zapisanego przewoźnika</option>
-  </select>
-  <button class="secondary" type="button" onclick="window.saveCarrier()">💾 Zapisz przewoźnika</button>
-  <button class="secondary" type="button" onclick="window.setDefaultCarrier()">⭐ Ustaw jako domyślnego</button>
-  <button class="danger" type="button" onclick="window.deleteCarrier()">🗑 Usuń zapis</button>
+98-432 Dzietrzkowice</textarea></div>
+<div class="carrier-profile-tools" aria-label="Zapisane profile przewoźników">
+  <button type="button" class="carrier-tool add" onclick="window.openCarrierAdd()">＋ Dodaj przewoźnika</button>
+  <button type="button" class="carrier-tool choose" onclick="window.openCarrierPicker()">👥 Wybierz przewoźnika</button>
 </div>
-<div class="carrier-hint">Zapisywana jest wyłącznie treść pola 16. Ciągnik i naczepa nie są zapisywane.</div>
+<div id="carrierAddModal" class="carrier-modal" aria-hidden="true">
+  <div class="carrier-modal-card" role="dialog" aria-modal="true" aria-labelledby="carrierAddTitle">
+    <h3 id="carrierAddTitle">Dodaj przewoźnika</h3>
+    <p>Zapisywany jest tylko tekst przewoźnika. Ciągnik i naczepa pozostają niezależne.</p>
+    <textarea id="newCarrierData" placeholder="Nazwa firmy\nAdres\nDodatkowe dane"></textarea>
+    <label class="carrier-default-check"><input type="checkbox" id="newCarrierDefault"> Ustaw jako domyślnego</label>
+    <div class="carrier-modal-actions"><button type="button" class="secondary" onclick="window.closeCarrierAdd()">Anuluj</button><button type="button" class="primary" onclick="window.saveNewCarrier()">Zapisz</button></div>
+  </div>
+</div>
+<div id="carrierPickerModal" class="carrier-modal" aria-hidden="true">
+  <div class="carrier-modal-card" role="dialog" aria-modal="true" aria-labelledby="carrierPickerTitle">
+    <h3 id="carrierPickerTitle">Zapisani przewoźnicy</h3>
+    <div id="carrierList" class="carrier-list"></div>
+    <div class="carrier-modal-actions"><button type="button" class="secondary" onclick="window.closeCarrierPicker()">Zamknij</button></div>
+  </div>
 </div>
 <div><label>Ciągnik</label><input id="tractor" value="PNT65116"></div>
 <div><label>Naczepa</label><input id="trailer" value="EWI3UG6"></div>
@@ -464,78 +479,6 @@ ul. Tysiąclecia 6
 
   function byId(id){ return document.getElementById(id); }
   function val(id){ var e=byId(id); return e ? (e.value || "") : ""; }
-
-  // V34: zapisane profile przewoźników. Dane są przechowywane lokalnie
-  // na urządzeniu użytkownika. Nie zapisujemy ciągnika ani naczepy.
-  var CARRIER_STORAGE_KEY = "cmr_saved_carriers_v1";
-  var DEFAULT_CARRIER_KEY = "cmr_default_carrier_v1";
-  function loadSavedCarriers(){
-    try{
-      var raw=localStorage.getItem(CARRIER_STORAGE_KEY);
-      var arr=raw?JSON.parse(raw):[];
-      return Array.isArray(arr)?arr.filter(function(x){return x&&typeof x.name==="string"&&x.name.trim();}):[];
-    }catch(e){ return []; }
-  }
-  function storeSavedCarriers(arr){
-    try{ localStorage.setItem(CARRIER_STORAGE_KEY,JSON.stringify(arr)); return true; }catch(e){ return false; }
-  }
-  function getDefaultCarrier(){ try{return localStorage.getItem(DEFAULT_CARRIER_KEY)||"";}catch(e){return "";} }
-  function setDefaultStored(name){ try{ if(name) localStorage.setItem(DEFAULT_CARRIER_KEY,name); else localStorage.removeItem(DEFAULT_CARRIER_KEY); return true; }catch(e){return false;} }
-  function carrierLabel(name){
-    var first=(name||"").split(/\n/)[0].trim();
-    return first || "Przewoźnik";
-  }
-  function refreshCarrierList(selectedName){
-    var sel=byId("savedCarrier"); if(!sel) return;
-    var current=selectedName!==undefined?selectedName:sel.value;
-    var arr=loadSavedCarriers();
-    sel.innerHTML='<option value="">📋 Wybierz zapisanego przewoźnika</option>';
-    arr.forEach(function(item){
-      var opt=document.createElement("option"); opt.value=item.name; opt.textContent=carrierLabel(item.name)+(item.name===getDefaultCarrier()?" ⭐":""); sel.appendChild(opt);
-    });
-    if(current && arr.some(function(x){return x.name===current;})) sel.value=current;
-  }
-  function applyCarrier(name){
-    if(!name) return;
-    var field=byId("carrier"); if(!field) return;
-    field.value=name;
-    var sel=byId("savedCarrier"); if(sel) sel.value=name;
-    update();
-    byId("status").textContent="Wybrano przewoźnika: "+carrierLabel(name)+". Ciągnik i naczepę wpisz osobno.";
-  }
-  window.saveCarrier=function(){
-    var name=val("carrier").trim();
-    if(!name){ alert("Wpisz dane przewoźnika w polu 16."); return; }
-    var arr=loadSavedCarriers();
-    var idx=arr.findIndex(function(x){return x.name===name;});
-    if(idx>=0){ arr[idx].name=name; }
-    else { arr.push({name:name}); }
-    if(!storeSavedCarriers(arr)){ alert("Nie udało się zapisać przewoźnika w pamięci tego urządzenia."); return; }
-    refreshCarrierList(name);
-    byId("status").textContent=(idx>=0?"Zaktualizowano":"Zapisano")+" przewoźnika: "+carrierLabel(name)+".";
-  };
-  window.setDefaultCarrier=function(){
-    var name=val("carrier").trim();
-    if(!name){ alert("Najpierw wpisz lub wybierz przewoźnika."); return; }
-    var arr=loadSavedCarriers();
-    if(!arr.some(function(x){return x.name===name;})){
-      arr.push({name:name});
-      if(!storeSavedCarriers(arr)){ alert("Nie udało się zapisać przewoźnika."); return; }
-    }
-    if(!setDefaultStored(name)){ alert("Nie udało się ustawić domyślnego przewoźnika."); return; }
-    refreshCarrierList(name);
-    byId("status").textContent="Ustawiono domyślnego przewoźnika: "+carrierLabel(name)+".";
-  };
-  window.deleteCarrier=function(){
-    var sel=byId("savedCarrier"), name=sel?sel.value:"";
-    if(!name){ alert("Wybierz zapis z listy, który chcesz usunąć."); return; }
-    var arr=loadSavedCarriers().filter(function(x){return x.name!==name;});
-    if(!storeSavedCarriers(arr)){ alert("Nie udało się usunąć zapisu."); return; }
-    if(getDefaultCarrier()===name) setDefaultStored("");
-    refreshCarrierList("");
-    byId("status").textContent="Usunięto zapis przewoźnika.";
-  };
-
   function setText(id, text){ document.querySelectorAll('[data-o="'+id+'"]').forEach(function(e){e.textContent=text || '';}); }
   function datePL(s){ if(!s) return ""; var a=s.split("-"); return a.length===3 ? a[2]+"."+a[1]+"."+a[0] : s; }
 
@@ -763,7 +706,7 @@ ul. Tysiąclecia 6
 
   window.clearCMR=function(){
     document.querySelectorAll("input,textarea").forEach(function(e){
-      if(e.id==="carrier") e.value=getDefaultCarrier() || "TOMA-TRANS Tomasz Podgórski\nul. Tysiąclecia 6\n98-432 Dzietrzkowice";
+      if(e.id==="carrier") e.value="TOMA-TRANS Tomasz Podgórski\nul. Tysiąclecia 6\n98-432 Dzietrzkowice";
       else if(e.id==="tractor") e.value="PNT65116";
       else if(e.id==="trailer") e.value="EWI3UG6";
       else e.value="";
@@ -822,24 +765,9 @@ ul. Tysiąclecia 6
     document.querySelectorAll(".paper .o, .paper .cargo").forEach(function(el){ ro.observe(el); });
   }
 
-  var savedCarrierSelect=byId("savedCarrier");
-  if(savedCarrierSelect){
-    savedCarrierSelect.addEventListener("change",function(){
-      if(this.value) applyCarrier(this.value);
-    });
-  }
-  refreshCarrierList();
-  // Jeżeli użytkownik ustawił domyślnego przewoźnika, ładowany jest automatycznie
-  // przy uruchomieniu aplikacji. Ciągnik i naczepa pozostają niezależne.
-  var defaultCarrier=getDefaultCarrier();
-  if(defaultCarrier && loadSavedCarriers().some(function(x){return x.name===defaultCarrier;})){
-    byId("carrier").value=defaultCarrier;
-  }
-
   makeRow();
   byId("jsWarning").style.display="none";
   update();
-  if(defaultCarrier) byId("status").textContent="Załadowano domyślnego przewoźnika: "+carrierLabel(defaultCarrier)+".";
   showPreviewPage(0);
 })();
 
@@ -913,5 +841,5 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
   }, {passive:false});
 })();
 </script>
-</body>
+\n<script id="carrier-profiles-js">\n(function(){\n  var KEY = "CMR_SAVED_CARRIERS_V1";\n  function byId(id){ return document.getElementById(id); }\n  function carrierData(){ try { var x=JSON.parse(localStorage.getItem(KEY)||"[]"); return Array.isArray(x)?x:[]; } catch(e){ return []; } }\n  function saveCarrierData(x){ localStorage.setItem(KEY,JSON.stringify(x)); }\n  function id(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }\n  function esc(s){ return String(s||"").replace(/[&<>\"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;", "'":"&#39;"})[c];}); }\n  function openModal(el){ if(!el)return; el.classList.add("open"); el.setAttribute("aria-hidden","false"); }\n  function closeModal(el){ if(!el)return; el.classList.remove("open"); el.setAttribute("aria-hidden","true"); }\n  window.openCarrierAdd=function(){ var t=byId("newCarrierData"); if(t){t.value=(byId("carrier")&&byId("carrier").value||"").trim();} var d=byId("newCarrierDefault"); if(d)d.checked=false; openModal(byId("carrierAddModal")); if(t)setTimeout(function(){t.focus();},30); };\n  window.closeCarrierAdd=function(){closeModal(byId("carrierAddModal"));};\n  window.openCarrierPicker=function(){render();openModal(byId("carrierPickerModal"));};\n  window.closeCarrierPicker=function(){closeModal(byId("carrierPickerModal"));};\n  window.saveNewCarrier=function(){\n    var text=(byId("newCarrierData")&&byId("newCarrierData").value||"").trim();\n    if(!text){alert("Wpisz dane przewoźnika.");return;}\n    var list=carrierData();\n    var isDefault=!!(byId("newCarrierDefault")&&byId("newCarrierDefault").checked);\n    if(isDefault) list.forEach(function(x){x.default=false;});\n    list.push({id:id(),text:text,default:isDefault});\n    saveCarrierData(list);\n    if(byId("carrier")) byId("carrier").value=text;\n    if(typeof window.updateCMR==='function') window.updateCMR();\n    window.closeCarrierAdd();\n  };\n  window.selectCarrier=function(cid){\n    var x=carrierData().find(function(v){return v.id===cid;}); if(!x)return;\n    if(byId("carrier")) byId("carrier").value=x.text;\n    if(typeof window.updateCMR==='function') window.updateCMR();\n    window.closeCarrierPicker();\n  };\n  window.setDefaultCarrier=function(cid){\n    var list=carrierData(); list.forEach(function(x){x.default=(x.id===cid);}); saveCarrierData(list); render();\n  };\n  window.deleteCarrier=function(cid){\n    var list=carrierData().filter(function(x){return x.id!==cid;}); saveCarrierData(list); render();\n  };\n  function render(){\n    var box=byId("carrierList"); if(!box)return; var list=carrierData();\n    if(!list.length){box.innerHTML='<div class="carrier-empty">Brak zapisanych przewoźników.</div>';return;}\n    box.innerHTML=list.map(function(x){\n      return '<div class="carrier-item '+(x.default?'default':'')+'"><div class="carrier-item-text">'+esc(x.text)+(x.default?'\\n★ Domyślny':'')+'</div><div class="carrier-item-actions"><button class="use" type="button" onclick="window.selectCarrier(\\''+x.id+'\\')">Użyj</button><button class="default" type="button" onclick="window.setDefaultCarrier(\\''+x.id+'\\')">Ustaw domyślny</button><button class="delete" type="button" onclick="window.deleteCarrier(\\''+x.id+'\\')">Usuń</button></div></div>';\n    }).join('');\n  }\n  function loadDefault(){\n    var list=carrierData(), x=list.find(function(v){return v.default;});\n    if(x && byId("carrier") && !byId("carrier").value.trim()){ byId("carrier").value=x.text; }\n    if(x && typeof window.updateCMR==='function') window.updateCMR();\n  }\n  document.addEventListener("DOMContentLoaded",function(){\n    loadDefault();\n    document.querySelectorAll(".carrier-modal").forEach(function(m){m.addEventListener("click",function(e){if(e.target===m)closeModal(m);});});\n  });\n})();\n</script>\n</body>
 </html>
