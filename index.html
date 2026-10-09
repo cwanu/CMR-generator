@@ -693,8 +693,8 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     document.querySelectorAll(".cargoPreview").forEach(function(box){ box.innerHTML=""; });
     var rows=document.querySelectorAll(".goods-row");
     rows.forEach(function(r,i){
-      // Cały wiersz 6–12 obniżony delikatnie względem poprzedniej wersji.
-      var y=38.0+i*0.8375;
+      // Cały wiersz 6–12 obniżony o około 0,5 cm na stronie A4.
+      var y=39.7+i*0.8375;
       // Kolumny 6–12 wyrównane do tła CMR. Pola 7, 8 i 9 przesunięte lekko w prawo.
       var fields=[
         [7.5,9.0,r.querySelector(".marks").value],
