@@ -31,11 +31,13 @@ button:active{transform:scale(.98)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.actions button{min-height:42px}
 .status{margin-top:8px;font-size:12px;color:#6b7280}
 .goods{overflow:visible;background:#fafbfc;border:1px solid #e5e7eb;border-radius:11px;padding:8px}
-.goods-row{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto auto;gap:8px;min-width:0;margin-bottom:8px;padding:0 34px 0 0}
+.goods-row{position:relative;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.95fr) minmax(0,.95fr) minmax(0,1.9fr) minmax(0,1.15fr) minmax(0,1.15fr) minmax(0,1.15fr);gap:8px;min-width:0;margin-bottom:8px;padding:0 34px 0 0;align-items:start}
 .goods-row:last-child{margin-bottom:0}
 .goods-cell{min-width:0}
 .goods-cell label{font-size:10px;color:#6b7280;font-weight:800;margin:0 0 4px;padding-left:2px}
 .goods-row input{width:100%;box-sizing:border-box;padding:9px 8px;font-size:13px;min-width:0}
+@media(max-width:700px){.goods-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.goods-row .goods-cell:nth-child(4){grid-column:1/-1}.goods-row .remove{top:0;right:0}.goods-row{padding-right:34px}}
+@media(min-width:701px) and (max-width:900px){.goods-row{grid-template-columns:repeat(4,minmax(0,1fr))}.goods-row .goods-cell:nth-child(4){grid-column:auto}}
 .goods-row .remove{position:absolute;right:0;top:0;width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;border-radius:8px}
 #addRow{margin-top:8px}
 .nojs{padding:10px 12px;background:#fff6d8;border:1px solid #ead38a;border-radius:10px;margin-bottom:10px;font-size:13px}
@@ -691,15 +693,17 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     document.querySelectorAll(".cargoPreview").forEach(function(box){ box.innerHTML=""; });
     var rows=document.querySelectorAll(".goods-row");
     rows.forEach(function(r,i){
-      var y=39.5+i*0.8375;
+      var y=37.2+i*0.8375;
+      // Pozycje odpowiadają rzeczywistym kolumnom 6–12 na tle CMR.
+      // Każda wartość zaczyna się we własnej kolumnie, bez nakładania pól.
       var fields=[
-        [10.0,37.0,r.querySelector(".marks").value],
-        [9.0,7.0,r.querySelector(".qty").value],
-        [16.8,5.4,r.querySelector(".pack").value],
-        [22.4,5.2,r.querySelector(".desc").value],
-        [28.1,17.0,r.querySelector(".stat").value],
-        [53.5,11.3,r.querySelector(".weight").value],
-        [65.2,11.3,r.querySelector(".volume").value]
+        [7.5,9.0,r.querySelector(".marks").value],
+        [16.7,8.8,r.querySelector(".qty").value],
+        [25.7,9.0,r.querySelector(".pack").value],
+        [34.9,18.2,r.querySelector(".desc").value],
+        [53.4,11.4,r.querySelector(".stat").value],
+        [65.0,11.5,r.querySelector(".weight").value],
+        [76.6,11.4,r.querySelector(".volume").value]
       ];
       fields.forEach(function(f){
         var d=document.createElement("div");
