@@ -1,7 +1,7 @@
 {
   "name": "CMR Generator",
   "short_name": "CMR",
-  "start_url": "./?v=64",
+  "start_url": "./?v=65",
   "display": "standalone",
   "background_color": "#f1f4f7",
   "theme_color": "#111827"
