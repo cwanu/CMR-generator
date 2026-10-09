@@ -696,11 +696,12 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
       // Wysokość pozostaje bez zmian względem V91.
       // Wysokość pól zachowana dokładnie jak w V91.
       var y=41.38+i*0.8375;
-      // Zmieniono wyłącznie pole 9: przesunięcie o 5 mm w prawo względem V91.
+      // Pola 7 i 8 przesunięte o 5 mm w lewo względem bieżącej wersji.
+      // Wysokość i pozostałe pozycje pozostają bez zmian.
       var fields=[
         [7.5,9.0,r.querySelector(".marks").value],
-        [22.56,8.3,r.querySelector(".qty").value],
-        [31.56,8.5,r.querySelector(".pack").value],
+        [20.18,8.3,r.querySelector(".qty").value],
+        [29.18,8.5,r.querySelector(".pack").value],
         [43.14,17.1,r.querySelector(".desc").value],
         [53.4,11.4,r.querySelector(".stat").value],
         [65.0,11.5,r.querySelector(".weight").value],
