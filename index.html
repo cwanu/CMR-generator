@@ -693,9 +693,9 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     document.querySelectorAll(".cargoPreview").forEach(function(box){ box.innerHTML=""; });
     var rows=document.querySelectorAll(".goods-row");
     rows.forEach(function(r,i){
-      // Wysokość pozostaje bez zmian względem V91.
-      // Wysokość pól zachowana dokładnie jak w V91.
-      var y=40.03+i*0.8375;
+      // Pola 6–12 przesunięte o 5 mm w górę względem V94.
+      // Pozycje poziome pozostają bez zmian.
+      var y=39.6965+i*0.8375;
       // Pola 7 i 8 przesunięte o 5 mm w lewo względem bieżącej wersji.
       // Wysokość i pozostałe pozycje pozostają bez zmian.
       var fields=[
