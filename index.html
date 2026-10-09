@@ -696,13 +696,13 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
       // Pola 6–12 przesunięte o 5 mm w górę względem V94.
       // Pozycje poziome pozostają bez zmian.
       var y=39.6965+i*0.8375;
-      // Pola 7 i 8 przesunięte o 5 mm w lewo względem bieżącej wersji.
-      // Wysokość i pozostałe pozycje pozostają bez zmian.
+      // W V97 tylko pola 8 i 9 przesunięte o 4 mm w prawo względem V96.
+      // Pozycja pionowa oraz pozostałe pola pozostają bez zmian.
       var fields=[
         [7.5,9.0,r.querySelector(".marks").value],
         [20.18,8.3,r.querySelector(".qty").value],
-        [29.18,8.5,r.querySelector(".pack").value],
-        [43.14,17.1,r.querySelector(".desc").value],
+        [31.0848,8.5,r.querySelector(".pack").value],
+        [45.0448,17.1,r.querySelector(".desc").value],
         [53.4,11.4,r.querySelector(".stat").value],
         [65.0,11.5,r.querySelector(".weight").value],
         [77.1,10.9,r.querySelector(".volume").value]
