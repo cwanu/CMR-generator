@@ -698,12 +698,12 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
       // Każda wartość zaczyna się we własnej kolumnie, bez nakładania pól.
       var fields=[
         [7.5,9.0,r.querySelector(".marks").value],
-        [16.7,8.8,r.querySelector(".qty").value],
-        [25.7,9.0,r.querySelector(".pack").value],
-        [34.9,18.2,r.querySelector(".desc").value],
+        [17.2,8.3,r.querySelector(".qty").value],
+        [26.2,8.5,r.querySelector(".pack").value],
+        [35.4,17.7,r.querySelector(".desc").value],
         [53.4,11.4,r.querySelector(".stat").value],
         [65.0,11.5,r.querySelector(".weight").value],
-        [76.6,11.4,r.querySelector(".volume").value]
+        [77.1,10.9,r.querySelector(".volume").value]
       ];
       fields.forEach(function(f){
         var d=document.createElement("div");
@@ -711,7 +711,8 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
         d.style.left=f[0]+"%";
         d.style.top=y+"%";
         d.style.width=f[1]+"%";
-        d.style.height="0.75%";
+        d.style.height="1.05%";
+        if(f[0]===77.1){ d.style.fontSize="8.5px"; d.style.whiteSpace="nowrap"; }
         d.textContent=f[2] || "";
         document.querySelectorAll(".cargoPreview").forEach(function(box){ box.appendChild(d.cloneNode(true)); });
       });
