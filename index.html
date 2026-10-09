@@ -694,13 +694,14 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     var rows=document.querySelectorAll(".goods-row");
     rows.forEach(function(r,i){
       // Wysokość pozostaje bez zmian względem V91.
+      // Wysokość pól zachowana dokładnie jak w V91.
       var y=41.38+i*0.8375;
-      // Tylko pola 7, 8 i 9 przesunięte o kolejne 10 mm w prawo (4,76% szerokości A4).
+      // Zmieniono wyłącznie pole 9: przesunięcie o 5 mm w prawo względem V91.
       var fields=[
         [7.5,9.0,r.querySelector(".marks").value],
-        [27.32,8.3,r.querySelector(".qty").value],
-        [36.32,8.5,r.querySelector(".pack").value],
-        [45.52,17.1,r.querySelector(".desc").value],
+        [22.56,8.3,r.querySelector(".qty").value],
+        [31.56,8.5,r.querySelector(".pack").value],
+        [43.14,17.1,r.querySelector(".desc").value],
         [53.4,11.4,r.querySelector(".stat").value],
         [65.0,11.5,r.querySelector(".weight").value],
         [77.1,10.9,r.querySelector(".volume").value]
