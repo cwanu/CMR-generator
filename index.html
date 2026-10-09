@@ -693,14 +693,15 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     document.querySelectorAll(".cargoPreview").forEach(function(box){ box.innerHTML=""; });
     var rows=document.querySelectorAll(".goods-row");
     rows.forEach(function(r,i){
-      // Cały wiersz 6–12 obniżony o około 0,5 cm na stronie A4.
-      var y=39.7+i*0.8375;
-      // Kolumny 6–12 wyrównane do tła CMR. Pola 7, 8 i 9 przesunięte lekko w prawo.
+      // Wersja V91: dodatkowe obniżenie o ok. 0,5 cm względem V90.
+      // 0,5 cm na wysokości A4 (29,7 cm) to ok. 1,68% strony.
+      var y=41.38+i*0.8375;
+      // Pola 7, 8 i 9 przesunięte dodatkowo o 1 cm w prawo (ok. 4,76% szerokości A4).
       var fields=[
         [7.5,9.0,r.querySelector(".marks").value],
-        [17.8,8.3,r.querySelector(".qty").value],
-        [26.8,8.5,r.querySelector(".pack").value],
-        [36.0,17.1,r.querySelector(".desc").value],
+        [22.56,8.3,r.querySelector(".qty").value],
+        [31.56,8.5,r.querySelector(".pack").value],
+        [40.76,17.1,r.querySelector(".desc").value],
         [53.4,11.4,r.querySelector(".stat").value],
         [65.0,11.5,r.querySelector(".weight").value],
         [77.1,10.9,r.querySelector(".volume").value]
