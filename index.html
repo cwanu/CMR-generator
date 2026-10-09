@@ -151,6 +151,11 @@ textarea{min-height:58px}
 .vehicle-list{display:grid;gap:8px;margin:12px 0}.vehicle-item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #ddd;border-radius:10px;padding:10px}.vehicle-item-main{min-width:0}.vehicle-item-value{font-weight:700;word-break:break-word}.vehicle-item-default{font-size:12px;color:#287a3e;margin-top:3px}.vehicle-item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.vehicle-item-actions button{width:auto;margin:0;padding:9px 10px;font-size:13px}
 @media(max-width:500px){.vehicle-profile-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}.vehicle-tool{width:100%;padding:8px 7px;font-size:12px}.vehicle-item{display:block}.vehicle-item-actions{margin-top:8px;justify-content:stretch}.vehicle-item-actions button{flex:1}}
 .vehicle-profile-tools{display:flex;gap:8px;margin:7px 0 2px;flex-wrap:wrap}.vehicle-profile-tools .carrier-tool{flex:0 1 auto;width:auto}.vehicle-profile-tools .carrier-tool{padding:6px 9px;font-size:11px;line-height:1.2;white-space:nowrap}@media(max-width:500px){.vehicle-profile-tools{display:flex;gap:6px;flex-wrap:nowrap}.vehicle-profile-tools .carrier-tool{width:auto;flex:0 0 auto;padding:6px 9px;font-size:11px;line-height:1.2;white-space:nowrap}}
+
+.goods-section{display:flex;flex-direction:column;gap:10px;min-width:0}
+.goods-marks{display:flex;flex-direction:column;gap:5px;min-width:0}
+.goods-marks label{font-weight:600;font-size:14px}
+.goods-marks textarea{width:100%;min-height:58px;box-sizing:border-box;resize:vertical}
 </style>
 <style id="carrier-profiles-ui">
 .party-tools{display:flex;gap:8px;margin:6px 0 2px;flex-wrap:wrap}
@@ -378,14 +383,14 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div><label>4. Miejsce załadunku</label><input id="loadingPlace"></div>
 <div><label>4. Data załadunku</label><input id="loadingDate" type="date"></div>
 <div class="full"><label>5. Załączone dokumenty</label><textarea id="docs"></textarea></div>
-<div class="full"><label>6. Znaki i numery</label><textarea id="marks"></textarea></div>
-
 <div class="full">
-<label>7–12. Towar</label>
-<div class="goods">
-<div id="rows"></div>
+<label>6–12. Towar</label>
+<div class="goods-section">
+  <div class="goods">
+    <div id="rows"></div>
+  </div>
+  <button id="addRow" class="secondary" type="button" onclick="window.addCMRRow()">＋ Dodaj towar</button>
 </div>
-<button id="addRow" class="secondary" type="button" onclick="window.addCMRRow()">＋ Dodaj towar</button>
 
 <div class="full"><label>13. Instrukcje nadawcy</label><textarea id="instructions"></textarea></div>
 <div class="full"><label>16. Przewoźnik</label><textarea id="carrier"></textarea></div>
@@ -441,7 +446,7 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div class="full"><label>18. Zastrzeżenia przewoźnika</label><textarea id="reservations"></textarea></div>
 <div class="full"><label>19. Postanowienia specjalne</label><textarea id="special"></textarea></div>
 <div class="full"><label>23. Przewoźnik / dane do pola 23</label><textarea id="field23" readonly placeholder="Dane zostaną automatycznie przepisane z pola 16"></textarea></div>
-<div class="full"><label>Dodatkowe informacje</label><textarea id="extra"></textarea></div>
+
 </div>
 </div>
 
@@ -482,7 +487,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div data-o="oSpecial" class="o" style="left:48.5%;top:62.2%;width:40.0%;height:4.5%;font-size:8px"></div>
 <div data-o="oIssue" class="o" style="left:14.0%;top:79.0%;width:33.0%;height:2.8%;font-size:8px;line-height:1.1;text-align:center"></div>
 <div data-o="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;text-align:center;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important"></div>
-<div data-o="oExtra" class="o" style="left:51.2%;top:85.2%;width:40%;height:5%;font-size:8px"></div>
 <div class="cargoPreview"></div></div>
 </div>
 <div class="paper-wrap"><div class="page-label">2. Egzemplarz dla odbiorcy</div><div class="paper p2"><img class="paper-bg" alt="" src="page-2.png">
@@ -503,7 +507,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div data-o="oSpecial" class="o" style="left:48.5%;top:62.2%;width:40.0%;height:4.5%;font-size:8px"></div>
 <div data-o="oIssue" class="o" style="left:14.0%;top:79.0%;width:33.0%;height:2.8%;font-size:8px;line-height:1.1;text-align:center"></div>
 <div data-o="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;text-align:center;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important"></div>
-<div data-o="oExtra" class="o" style="left:51.2%;top:85.2%;width:40%;height:5%;font-size:8px"></div>
 <div class="cargoPreview"></div></div>
 </div>
 <div class="paper-wrap"><div class="page-label">3. Egzemplarz dla przewoźnika</div><div class="paper p3"><img class="paper-bg" alt="" src="page-3.png">
@@ -524,7 +527,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div data-o="oSpecial" class="o" style="left:48.5%;top:62.2%;width:40.0%;height:4.5%;font-size:8px"></div>
 <div data-o="oIssue" class="o" style="left:14.0%;top:79.0%;width:33.0%;height:2.8%;font-size:8px;line-height:1.1;text-align:center"></div>
 <div data-o="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;text-align:center;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important"></div>
-<div data-o="oExtra" class="o" style="left:51.2%;top:85.2%;width:40%;height:5%;font-size:8px"></div>
 <div class="cargoPreview"></div></div>
 </div>
 <div class="paper-wrap"><div class="page-label">4. Egzemplarz dla przewoźnika / kopia</div><div class="paper p4"><img class="paper-bg" alt="" src="page-4.png">
@@ -545,7 +547,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div data-o="oSpecial" class="o" style="left:48.5%;top:62.2%;width:40.0%;height:4.5%;font-size:8px"></div>
 <div data-o="oIssue" class="o" style="left:14.0%;top:79.0%;width:33.0%;height:2.8%;font-size:8px;line-height:1.1;text-align:center"></div>
 <div data-o="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;text-align:center;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important"></div>
-<div data-o="oExtra" class="o" style="left:51.2%;top:85.2%;width:40%;height:5%;font-size:8px"></div>
 <div class="cargoPreview"></div></div>
 </div>
 </div>
@@ -567,6 +568,7 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     var row=document.createElement("div");
     row.className="goods-row";
     row.innerHTML =
+      '<div class="goods-cell"><label>6. Znaki i numery</label><input class="marks" placeholder="znaki / numery"></div>' +
       '<div class="goods-cell"><label>7. Paczki</label><input class="qty" inputmode="numeric" placeholder="np. 12"></div>' +
       '<div class="goods-cell"><label>8. Opakowanie</label><input class="pack" placeholder="palety"></div>' +
       '<div class="goods-cell"><label>9. Towar</label><input class="desc" placeholder="Nazwa towaru"></div>' +
@@ -576,6 +578,7 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
       '<button type="button" class="danger remove" aria-label="Usuń towar">×</button>';
 
     if(data){
+      row.querySelector(".marks").value=data.marks || "";
       row.querySelector(".qty").value=data.qty || "";
       row.querySelector(".pack").value=data.pack || "";
       row.querySelector(".desc").value=data.desc || "";
@@ -671,7 +674,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     setText("oDelivery",val("delivery"));
     setText("oLoading",[val("loadingPlace"),datePL(val("loadingDate"))].filter(Boolean).join(" / "));
     setText("oDocs",val("docs"));
-    setText("oMarks",val("marks"));
     var carrierText = val("carrier").trim();
     setText("oCarrier", carrierText);
     setText("oTractor", ""); setText("oTrailer", ""); setText("oReg", "");
@@ -687,7 +689,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     var field23 = byId("field23");
     if(field23 && field23.value !== carrierName) field23.value = carrierName;
     setText("o23", carrierName);
-    setText("oExtra",val("extra"));
 
     fitFormFonts();
     requestAnimationFrame(fitPreviewFonts);
@@ -697,6 +698,7 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     rows.forEach(function(r,i){
       var y=39.5+i*0.8375;
       var fields=[
+        [10.0,37.0,r.querySelector(".marks").value],
         [9.0,7.0,r.querySelector(".qty").value],
         [16.8,5.4,r.querySelector(".pack").value],
         [22.4,5.2,r.querySelector(".desc").value],
@@ -1071,7 +1073,7 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
   };
   function el(id){return document.getElementById(id);}
   function read(k){try{var x=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(x)?x:[]}catch(e){return[];}}
-  function write(k,x){localStorage.setItem(k,JSON.stringify(x));}
+  function write(k,x){try{localStorage.setItem(k,JSON.stringify(x));return true;}catch(e){return false;}}
   function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
   function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
   function sync(){if(typeof window.updateCMR==='function')window.updateCMR();}
@@ -1079,10 +1081,10 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
   function close(m){if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true');}}
   function openAdd(t){var c=CFG[t],f=el(c.field),x=el(c.text),d=el(c.def);if(x)x.value=f?f.value:'';if(d)d.checked=false;open(el(c.add));if(x)setTimeout(function(){x.focus();},40);}
   function openPicker(t){render(t);open(el(CFG[t].picker));}
-  function saveNew(t){var c=CFG[t],x=el(c.text),txt=(x?x.value:'').trim();if(!txt){alert('Wpisz dane '+c.label+'.');if(x)x.focus();return;}var a=read(c.key),d=!!(el(c.def)&&el(c.def).checked);if(d)a.forEach(function(v){v.default=false;});a.push({id:id(),text:txt,default:d});try{write(c.key,a);}catch(e){alert('Nie udało się zapisać profilu.');return;}if(el(c.field))el(c.field).value=txt;sync();close(el(c.add));}
+  function saveNew(t){var c=CFG[t],x=el(c.text),txt=(x?x.value:'').trim();if(!txt){alert('Wpisz dane '+c.label+'.');if(x)x.focus();return;}var a=read(c.key),d=!!(el(c.def)&&el(c.def).checked);if(d)a.forEach(function(v){v.default=false;});a.push({id:id(),text:txt,default:d});if(!write(c.key,a)){alert('Nie udało się zapisać profilu. Sprawdź wolne miejsce w pamięci przeglądarki i jej ustawienia.');return;}if(el(c.field))el(c.field).value=txt;sync();close(el(c.add));}
   function use(t,i){var c=CFG[t],a=read(c.key),x=a.find(function(v){return v.id===i;});if(!x)return;if(el(c.field))el(c.field).value=x.text;sync();close(el(c.picker));}
-  function setDefault(t,i){var c=CFG[t],a=read(c.key);a.forEach(function(v){v.default=v.id===i;});write(c.key,a);render(t);}
-  function remove(t,i){var c=CFG[t],a=read(c.key).filter(function(v){return v.id!==i;});write(c.key,a);render(t);}
+  function setDefault(t,i){var c=CFG[t],a=read(c.key);a.forEach(function(v){v.default=v.id===i;});if(!write(c.key,a)){alert('Nie udało się zapisać zmian profilu. Sprawdź ustawienia pamięci przeglądarki.');return;}render(t);}
+  function remove(t,i){var c=CFG[t],a=read(c.key).filter(function(v){return v.id!==i;});if(!write(c.key,a)){alert('Nie udało się usunąć profilu. Sprawdź ustawienia pamięci przeglądarki.');return;}render(t);}
   function render(t){var c=CFG[t],box=el(c.list);if(!box)return;var a=read(c.key);if(!a.length){box.innerHTML='<div class="carrier-empty">Brak zapisanych '+(t==='sender'?'nadawców.':'odbiorców.')+'</div>';return;}box.innerHTML=a.map(function(v){return '<div class="carrier-item '+(v.default?'default':'')+'"><div class="carrier-item-text">'+esc(v.text)+(v.default?'\n★ Domyślny':'')+'</div><div class="carrier-item-actions"><button class="use" type="button" data-a="use" data-i="'+esc(v.id)+'">Użyj</button><button class="default" type="button" data-a="default" data-i="'+esc(v.id)+'">Ustaw domyślny</button><button class="delete" type="button" data-a="delete" data-i="'+esc(v.id)+'">Usuń</button></div></div>';}).join('');box.querySelectorAll('[data-a]').forEach(function(b){b.addEventListener('click',function(){var a=b.getAttribute('data-a'),i=b.getAttribute('data-i');if(a==='use')use(t,i);else if(a==='default')setDefault(t,i);else remove(t,i);});});}
   function load(t){var c=CFG[t],a=read(c.key),x=a.find(function(v){return v.default;});if(x&&el(c.field)&&!el(c.field).value.trim()){el(c.field).value=x.text;sync();}}
   window.openSenderProfileAdd=function(){openAdd('sender');};window.closeSenderAdd=function(){close(el(CFG.sender.add));};window.openSenderProfilePicker=function(){openPicker('sender');};window.closeSenderPicker=function(){close(el(CFG.sender.picker));};window.saveNewSender=function(){saveNew('sender');};
