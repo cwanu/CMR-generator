@@ -701,7 +701,7 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     document.querySelectorAll(".cargoPreview").forEach(function(box){ box.innerHTML=""; });
     var rows=document.querySelectorAll(".goods-row");
     rows.forEach(function(r,i){
-      var y=39.5+i*1.675;
+      var y=39.5+i*0.8375;
       var fields=[
         [9.0,7.0,r.querySelector(".qty").value],
         [16.8,5.4,r.querySelector(".pack").value],
@@ -716,7 +716,7 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
         d.style.left=f[0]+"%";
         d.style.top=y+"%";
         d.style.width=f[1]+"%";
-        d.style.height="1.5%";
+        d.style.height="0.75%";
         d.textContent=f[2] || "";
         document.querySelectorAll(".cargoPreview").forEach(function(box){ box.appendChild(d.cloneNode(true)); });
       });
