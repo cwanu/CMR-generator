@@ -789,6 +789,7 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
   };
 
   window.clearCMR=function(){
+    try{localStorage.removeItem("CMR_CURRENT_DRAFT_V1");}catch(e){}
     document.querySelectorAll("input,textarea").forEach(function(e){
       e.value="";
     });
@@ -884,6 +885,40 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
   });
   window.showCMRPage=forcePage;
   forcePage(0);
+})();
+</script>
+<script id="cmr-draft-persistence">
+(function(){
+  "use strict";
+  var KEY="CMR_CURRENT_DRAFT_V1";
+  var FIELD_IDS=["cmr","issuePlace","issueDate","sender","receiver","delivery","loadingPlace","loadingDate","docs","instructions","carrier","tractor","trailer","successive","reservations"];
+  var timer=null, restoring=false;
+  function el(id){return document.getElementById(id);}
+  function readDraft(){try{var raw=localStorage.getItem(KEY);if(!raw)return null;var d=JSON.parse(raw);return d&&typeof d==="object"?d:null;}catch(e){return null;}}
+  function getRows(){return Array.prototype.slice.call(document.querySelectorAll("#rows .goods-row")).map(function(r){function v(c){var x=r.querySelector("."+c);return x?x.value:"";}return {marks:v("marks"),qty:v("qty"),pack:v("pack"),desc:v("desc"),stat:v("stat"),weight:v("weight"),volume:v("volume")};});}
+  function collect(){var fields={};FIELD_IDS.forEach(function(id){var x=el(id);if(x)fields[id]=x.value;});return {schema:1,savedAt:new Date().toISOString(),fields:fields,rows:getRows()};}
+  function save(){if(restoring)return;try{localStorage.setItem(KEY,JSON.stringify(collect()));var st=el("status");if(st)st.textContent="Podgląd zaktualizowany. Zapisano automatycznie.";}catch(e){var st=el("status");if(st)st.textContent="Nie udało się zapisać bieżącego CMR. Sprawdź pamięć przeglądarki.";}}
+  function scheduleSave(){if(restoring)return;if(timer)clearTimeout(timer);timer=setTimeout(save,250);}
+  function restore(){var d=readDraft();if(!d)return;restoring=true;try{
+    FIELD_IDS.forEach(function(id){var x=el(id),v=d.fields&&d.fields[id];if(x&&typeof v==="string")x.value=v;});
+    var rows=Array.isArray(d.rows)?d.rows.slice(0,100):[];
+    var box=el("rows");if(box)box.innerHTML="";
+    if(rows.length){rows.forEach(function(row){window.addCMRRow();var r=box.lastElementChild;if(!r)return;["marks","qty","pack","desc","stat","weight","volume"].forEach(function(c){var x=r.querySelector("."+c);if(x&&typeof row[c]==="string")x.value=row[c];});});}
+    else if(window.addCMRRow){window.addCMRRow();}
+  }catch(e){console.warn("Nie udało się w pełni odtworzyć ostatniego CMR",e);}finally{restoring=false;}
+    if(typeof window.updateCMR==="function")window.updateCMR();
+    var st=el("status");if(st)st.textContent="Przywrócono ostatni formularz CMR z pamięci telefonu.";
+  }
+  // Zapisz także zmiany ustawiane programowo przez wybór zapisanego profilu/pojazdu.
+  if(typeof window.updateCMR==="function"){var originalUpdate=window.updateCMR;window.updateCMR=function(){var result=originalUpdate.apply(this,arguments);scheduleSave();return result;};}
+  // Przywracamy tylko pola bieżącego dokumentu, nie okna profili ani ich listy.
+  restore();
+  document.addEventListener("input",function(e){if(e.target&&e.target.closest&&e.target.closest("#app")&&(FIELD_IDS.indexOf(e.target.id)>=0||e.target.closest("#rows")))scheduleSave();});
+  document.addEventListener("change",function(e){if(e.target&&e.target.closest&&e.target.closest("#app")&&(FIELD_IDS.indexOf(e.target.id)>=0||e.target.closest("#rows")))scheduleSave();});
+  var add=el("addRow");if(add)add.addEventListener("click",function(){setTimeout(scheduleSave,0);});
+  document.addEventListener("click",function(e){if(e.target&&e.target.closest&&e.target.closest("#rows .remove"))setTimeout(scheduleSave,0);});
+  window.addEventListener("pagehide",function(){if(timer)clearTimeout(timer);save();});
+  window.addEventListener("beforeunload",function(){if(timer)clearTimeout(timer);save();});
 })();
 </script>
 <script>
