@@ -391,6 +391,7 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
   </div>
   <button id="addRow" class="secondary" type="button" onclick="window.addCMRRow()">＋ Dodaj towar</button>
 </div>
+</div>
 
 <div class="full"><label>13. Instrukcje nadawcy</label><textarea id="instructions"></textarea></div>
 <div class="full"><label>16. Przewoźnik</label><textarea id="carrier"></textarea></div>
@@ -444,7 +445,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div class="vehicle-modal-actions"><button type="button" class="secondary" onclick="window.closeTrailerPicker()">Zamknij</button></div></div></div>
 <div class="full"><label>17. Kolejni przewoźnicy</label><textarea id="successive"></textarea></div>
 <div class="full"><label>18. Zastrzeżenia przewoźnika</label><textarea id="reservations"></textarea></div>
-<div class="full"><label>19. Postanowienia specjalne</label><textarea id="special"></textarea></div>
 <div class="full"><label>23. Przewoźnik / dane do pola 23</label><textarea id="field23" readonly placeholder="Dane zostaną automatycznie przepisane z pola 16"></textarea></div>
 
 </div>
@@ -484,7 +484,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div data-o="oTrailer" class="o" aria-label="Numer rejestracyjny naczepy" style="left:72.0%;top:20.25%;width:17.5%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
 <div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="display:none"></div>
 <div data-o="oInstructions" class="o" style="left:7.4%;top:66.32%;width:41.0%;height:7.09%;font-size:8px"></div>
-<div data-o="oSpecial" class="o" style="left:48.5%;top:62.2%;width:40.0%;height:4.5%;font-size:8px"></div>
 <div data-o="oIssue" class="o" style="left:14.0%;top:79.0%;width:33.0%;height:2.8%;font-size:8px;line-height:1.1;text-align:center"></div>
 <div data-o="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;text-align:center;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important"></div>
 <div class="cargoPreview"></div></div>
@@ -504,7 +503,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div data-o="oTrailer" class="o" aria-label="Numer rejestracyjny naczepy" style="left:72.0%;top:20.25%;width:17.5%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
 <div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="display:none"></div>
 <div data-o="oInstructions" class="o" style="left:7.4%;top:66.32%;width:41.0%;height:7.09%;font-size:8px"></div>
-<div data-o="oSpecial" class="o" style="left:48.5%;top:62.2%;width:40.0%;height:4.5%;font-size:8px"></div>
 <div data-o="oIssue" class="o" style="left:14.0%;top:79.0%;width:33.0%;height:2.8%;font-size:8px;line-height:1.1;text-align:center"></div>
 <div data-o="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;text-align:center;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important"></div>
 <div class="cargoPreview"></div></div>
@@ -524,7 +522,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div data-o="oTrailer" class="o" aria-label="Numer rejestracyjny naczepy" style="left:72.0%;top:20.25%;width:17.5%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
 <div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="display:none"></div>
 <div data-o="oInstructions" class="o" style="left:7.4%;top:66.32%;width:41.0%;height:7.09%;font-size:8px"></div>
-<div data-o="oSpecial" class="o" style="left:48.5%;top:62.2%;width:40.0%;height:4.5%;font-size:8px"></div>
 <div data-o="oIssue" class="o" style="left:14.0%;top:79.0%;width:33.0%;height:2.8%;font-size:8px;line-height:1.1;text-align:center"></div>
 <div data-o="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;text-align:center;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important"></div>
 <div class="cargoPreview"></div></div>
@@ -544,7 +541,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
 <div data-o="oTrailer" class="o" aria-label="Numer rejestracyjny naczepy" style="left:72.0%;top:20.25%;width:17.5%;height:3.0%;font-size:6.0px;line-height:1.05;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;z-index:20"></div>
 <div data-o="oReg" class="o" aria-label="Numery rejestracyjne" style="display:none"></div>
 <div data-o="oInstructions" class="o" style="left:7.4%;top:66.32%;width:41.0%;height:7.09%;font-size:8px"></div>
-<div data-o="oSpecial" class="o" style="left:48.5%;top:62.2%;width:40.0%;height:4.5%;font-size:8px"></div>
 <div data-o="oIssue" class="o" style="left:14.0%;top:79.0%;width:33.0%;height:2.8%;font-size:8px;line-height:1.1;text-align:center"></div>
 <div data-o="o23" class="o" aria-label="Pole 23 - dane przewoźnika" style="left:33.25%;top:81.95%;width:25.9%;height:9.55%;font-size:7.5px;line-height:1.25;font-weight:700;text-align:center;color:#111!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:9999;padding:1.5% 1.5%;box-sizing:border-box;white-space:pre-wrap;background:transparent!important"></div>
 <div class="cargoPreview"></div></div>
@@ -682,7 +678,6 @@ Dodatkowe dane"></textarea><label class="carrier-default-check"><input type="che
     setText("oTractor", val("tractor").trim() ? "Ciągnik: "+val("tractor").trim() : "");
     setText("oTrailer", val("trailer").trim() ? "Naczepa: "+val("trailer").trim() : "");
     setText("oInstructions",val("instructions"));
-    setText("oSpecial",val("special"));
     setText("oIssue",[val("issuePlace"),datePL(val("issueDate"))].filter(Boolean).join(" / "));
     // Pole 23 jest automatycznie kopiowane z pola 16 (Przewoźnik).
     var carrierName = val("carrier").trim();
